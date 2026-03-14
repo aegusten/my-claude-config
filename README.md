@@ -9,19 +9,22 @@
 
 ```
 my-claude-config/
-├── CLAUDE.md                          ← Global AI identity & rules (loaded every session)
+├── CLAUDE.md                               ← Global AI identity & rules (loaded every session)
 ├── agents/
-│   ├── senior-backend.md              ← Python/FastAPI/Django senior engineer
-│   ├── senior-architect.md            ← System design & architecture review
-│   ├── security-reviewer.md           ← Security audit with severity ratings
-│   └── code-reviewer.md              ← General code review (PR-style)
+│   ├── senior-backend.md                   ← Python/FastAPI, proctoring pipeline, behavioral events
+│   ├── senior-architect.md                 ← System design, ExamBrowser architecture, API contracts
+│   ├── security-reviewer.md                ← Security audit: auth, input validation, public APIs
+│   ├── code-reviewer.md                    ← General code review (PR-style)
+│   ├── svelte-frontend.md                  ← SvelteKit admin dashboard, Svelte/Tauri exam client
+│   └── project-guide.md                    ← Plain-English overview of what ExamBrowser is and does
 ├── skills/
-│   ├── backend-patterns/SKILL.md     ← Service layer, async SQLAlchemy, Celery patterns
-│   ├── architecture/SKILL.md         ← IoT pipeline, API design, alert architecture
-│   ├── security/SKILL.md             ← JWT auth, input validation, rate limiting
-│   └── frontend-patterns/SKILL.md   ← React, TypeScript, WebSocket patterns
-├── install.ps1                        ← Windows setup (run as Admin)
-└── install.sh                         ← Linux/Mac setup
+│   ├── backend-patterns/SKILL.md           ← Service layer, async SQLAlchemy, Celery, guard deps
+│   ├── architecture/SKILL.md               ← Proctoring pipeline, risk scoring, session state machine
+│   ├── security/SKILL.md                   ← JWT auth, input validation, rate limiting, file uploads
+│   ├── frontend-patterns/SKILL.md          ← SvelteKit load functions, Svelte stores, Tailwind v4
+│   └── proctoring-patterns/SKILL.md        ← Behavioral incidents, ingest pattern, risk scoring
+├── install.ps1                             ← Windows setup (run as Admin)
+└── install.sh                             ← Linux/Mac setup
 ```
 
 ---
@@ -47,56 +50,10 @@ bash install.sh
 ## Syncing Between PCs
 
 ```bash
-# Pull latest (morning / when switching PCs)
-git pull
-
-# Push updates (after editing agents or CLAUDE.md)
+git pull       # morning / when switching PCs
 git add .
-git commit -m "update: improved backend agent"
+git commit -m "update: ..."
 git push
-```
-
----
-
-## How to Use the Agents
-
-In any project terminal with Claude Code running:
-
-```bash
-# Invoke a specific agent
-> Use the senior-backend agent. Write a FastAPI endpoint for sensor ingestion.
-
-> Use the senior-architect agent. I want to add real-time alerts — how should I design this?
-
-> Use the security-reviewer agent. Review my auth module.
-
-> Use the code-reviewer agent. Review the decoder module before I merge.
-
-# Or let Claude auto-pick based on CLAUDE.md context
-> Review this file and tell me what's wrong
-```
-
----
-
-## Per-Project Setup
-
-Each project should have its own `CLAUDE.md` at the root with project-specific context:
-
-```markdown
-# ProjectName — Claude Context
-
-## Stack
-...
-
-## Project Structure
-...
-
-## Specific Rules
-...
-
-## Run Commands
-- Start: `docker-compose up`
-- Test: `pytest`
 ```
 
 ---
@@ -105,7 +62,19 @@ Each project should have its own `CLAUDE.md` at the root with project-specific c
 
 | Agent | Use When | Model |
 |---|---|---|
-| `senior-backend` | Writing Python/FastAPI/Django code | Sonnet |
-| `senior-architect` | Designing systems, planning features | Opus |
-| `security-reviewer` | Auth code, public APIs, pre-deploy | Sonnet |
+| `project-guide` | "What are we building?" — overview, build status, plain-English explanations | Haiku |
+| `senior-backend` | FastAPI endpoints, models, Celery tasks, migrations | Sonnet |
+| `senior-architect` | New features, data models, system flows, infrastructure decisions | Opus |
+| `security-reviewer` | Auth code, public APIs, input handling, pre-deploy | Sonnet |
 | `code-reviewer` | PR reviews, general code quality | Sonnet |
+| `svelte-frontend` | Admin dashboard (SvelteKit), exam client UI (Svelte/Tauri) | Sonnet |
+
+## Skills Overview
+
+| Skill | Load When |
+|---|---|
+| `backend-patterns` | Writing Python/FastAPI code, reviewing service layer |
+| `architecture` | Planning new features, reviewing system design |
+| `security` | Auth, input validation, rate limiting |
+| `frontend-patterns` | SvelteKit pages, Svelte components, Tailwind v4 |
+| `proctoring-patterns` | Incident detection, ingest pipeline, risk scoring |

@@ -3,10 +3,10 @@
 ## When to Use This Skill
 Load this skill when writing or reviewing Python backend code, especially:
 - Service layer patterns
-- Repository / data access patterns
 - FastAPI route structure
-- Django view/serializer patterns
 - Celery task patterns
+- SQLAlchemy async patterns
+- Proctoring pipeline code
 
 ---
 
@@ -14,47 +14,53 @@ Load this skill when writing or reviewing Python backend code, especially:
 
 ```python
 # ✅ CORRECT — Route calls service, service handles logic
-# routes/sensor.py
-@router.post("/sensors/readings", response_model=ReadingResponse)
-async def create_reading(
-    payload: ReadingCreate,
-    db: AsyncSession = Depends(get_db),
-    current_device: Device = Depends(get_current_device),
-):
-    return await sensor_service.create_reading(db, payload, device=current_device)
+# api/v1/endpoints/exams.py
+@router.post("/", response_model=ExamSummary, dependencies=[Depends(require_role(UserRole.admin))])
+async def create_exam(
+    payload: ExamCreate,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Exam:
+    return await exam_service.create_exam(db, payload, created_by=current_user)
 
-# services/sensor_service.py
-async def create_reading(
-    db: AsyncSession,
-    payload: ReadingCreate,
-    device: Device,
-) -> SensorReading:
-    if payload.value < device.min_threshold or payload.value > device.max_threshold:
-        raise ValueError(f"Value {payload.value} out of range for device {device.id}")
-    
-    reading = SensorReading(
-        device_id=device.id,
-        value=payload.value,
-        unit=payload.unit,
-        recorded_at=payload.recorded_at or datetime.utcnow(),
-    )
-    db.add(reading)
-    await db.commit()
-    await db.refresh(reading)
-    return reading
+# services/exam_service.py
+async def create_exam(db: AsyncSession, payload: ExamCreate, created_by: User) -> Exam:
+    if payload.scheduled_end <= payload.scheduled_start:
+        raise ValueError("End must be after start")
+    exam = Exam(**payload.model_dump(), created_by_id=created_by.id)
+    db.add(exam)
+    await db.flush()
+    return exam
 ```
 
 ```python
 # ❌ WRONG — Business logic in route handler
-@router.post("/sensors/readings")
-async def create_reading(payload: ReadingCreate, db: AsyncSession = Depends(get_db)):
-    # Don't do this — logic belongs in service
-    if payload.value < 0:
-        raise HTTPException(400, "Bad value")
-    reading = SensorReading(**payload.dict())
-    db.add(reading)
+@router.post("/")
+async def create_exam(payload: ExamCreate, db: AsyncSession = Depends(get_db)):
+    if payload.scheduled_end <= payload.scheduled_start:  # logic belongs in service
+        raise HTTPException(400, "Bad dates")
+    exam = Exam(**payload.model_dump())
+    db.add(exam)
     await db.commit()
-    return reading
+    return exam
+```
+
+---
+
+## Admin Guard Pattern
+
+```python
+# ✅ CORRECT — guard dep in dependencies=[], not as named param
+_admin_only = [Depends(require_role(UserRole.admin, UserRole.superadmin))]
+
+@router.delete("/{exam_id}", status_code=204, dependencies=_admin_only)
+async def delete_exam(exam_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]) -> None:
+    ...
+
+# ❌ WRONG — named _admin param that Pylance flags and pollutes the signature
+@router.delete("/{exam_id}", status_code=204)
+async def delete_exam(exam_id: UUID, _admin: AdminUser, db: ...) -> None:
+    ...
 ```
 
 ---
@@ -62,24 +68,38 @@ async def create_reading(payload: ReadingCreate, db: AsyncSession = Depends(get_
 ## Async SQLAlchemy Pattern
 
 ```python
-# Correct async session usage
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
-async def get_device_by_id(db: AsyncSession, device_id: UUID) -> Device | None:
-    result = await db.execute(
-        select(Device).where(Device.id == device_id)
-    )
+# Single row
+async def get_session_by_id(db: AsyncSession, session_id: UUID) -> ExamSession | None:
+    result = await db.execute(select(ExamSession).where(ExamSession.id == session_id))
     return result.scalar_one_or_none()
 
-# With relationships loaded (avoid N+1)
-async def get_device_with_readings(db: AsyncSession, device_id: UUID) -> Device | None:
+# With relationships loaded (avoid N+1 — always load eagerly if you'll access the relation)
+async def get_session_with_incidents(db: AsyncSession, session_id: UUID) -> ExamSession | None:
     result = await db.execute(
-        select(Device)
-        .options(selectinload(Device.readings))
-        .where(Device.id == device_id)
+        select(ExamSession)
+        .options(selectinload(ExamSession.incidents))
+        .where(ExamSession.id == session_id)
     )
     return result.scalar_one_or_none()
+```
+
+---
+
+## Model Convention Pattern
+
+```python
+# All model files MUST start with this — required for lazy annotation evaluation
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+# Cross-model relationships go under TYPE_CHECKING to avoid circular imports
+if TYPE_CHECKING:
+    from app.models.exam import Exam, ExamSession
+
+class User(Base):
+    ...
+    # TYPE_CHECKING import lets Pylance resolve this without a runtime circular import
+    exam_sessions: Mapped[list[ExamSession]] = relationship(back_populates="student")
 ```
 
 ---
@@ -87,30 +107,36 @@ async def get_device_with_readings(db: AsyncSession, device_id: UUID) -> Device 
 ## Celery Task Pattern
 
 ```python
-# tasks/sensor_tasks.py
-from celery import shared_task
-from celery.utils.log import get_task_logger
+# Use bind=True ONLY when the task calls self.retry()
+@celery_app.task(name="app.tasks.score_session.compute", max_retries=2)
+def compute_risk_score(proctoring_session_id: str) -> dict:
+    ...  # no self needed — don't add bind=True
+```
 
-logger = get_task_logger(__name__)
+---
 
-@shared_task(
-    bind=True,
-    max_retries=3,
-    default_retry_delay=60,
-    time_limit=300,  # 5 min hard limit
-    soft_time_limit=240,  # 4 min soft limit
-)
-def process_sensor_batch(self, device_id: str, readings: list[dict]) -> dict:
-    try:
-        # heavy processing here
-        result = _do_processing(device_id, readings)
-        return {"status": "success", "processed": len(readings)}
-    except SoftTimeLimitExceeded:
-        logger.error(f"Task timed out for device {device_id}")
-        raise
-    except Exception as exc:
-        logger.error(f"Task failed for device {device_id}: {exc}")
-        raise self.retry(exc=exc)
+## Proctoring Ingest Pattern
+
+```python
+# ✅ CORRECT — behavior events create Incident rows synchronously (simple DB write)
+@router.post("/event", status_code=204)
+async def behavior_event(payload: BehaviorEvent, db: Annotated[AsyncSession, Depends(get_db)]) -> None:
+    session = await get_proctoring_session(db, payload.session_id)
+    incident = Incident(
+        proctoring_session_id=session.id,
+        exam_session_id=payload.session_id,
+        incident_type=IncidentType(payload.event_type),
+        severity=severity_map[incident_type],
+        occurred_at=payload.occurred_at,
+    )
+    db.add(incident)
+    # Done — fast, inline, no queue needed
+
+# ❌ WRONG — queuing simple DB writes is unnecessary overhead
+@router.post("/event", status_code=202)
+async def behavior_event(payload: BehaviorEvent) -> dict:
+    create_incident.delay(payload.model_dump())  # overkill for a DB write
+    return {"status": "queued"}
 ```
 
 ---
@@ -118,23 +144,18 @@ def process_sensor_batch(self, device_id: str, readings: list[dict]) -> dict:
 ## Error Handling Pattern
 
 ```python
-# Custom exceptions — define these, don't use raw HTTPException everywhere
-# exceptions.py
-class DeviceNotFoundError(Exception):
+# Custom domain exceptions — don't use raw HTTPException in services
+class ExamNotFoundError(Exception):
     pass
 
-class SensorValueOutOfRangeError(Exception):
-    pass
-
-# Exception handlers in main.py
-@app.exception_handler(DeviceNotFoundError)
-async def device_not_found_handler(request, exc):
+# Register handlers in main.py
+@app.exception_handler(ExamNotFoundError)
+async def exam_not_found(request, exc):
     return JSONResponse(status_code=404, content={"detail": str(exc)})
 
-# In service — raise domain exceptions, not HTTP exceptions
-async def get_device(db: AsyncSession, device_id: UUID) -> Device:
-    device = await device_repo.get_by_id(db, device_id)
-    if not device:
-        raise DeviceNotFoundError(f"Device {device_id} not found")
-    return device
+# Service raises domain exceptions; routes catch nothing (handled by FastAPI)
+async def start_session(db: AsyncSession, exam_id: UUID, student: User) -> ExamSession:
+    exam = await get_exam(db, exam_id)
+    if not exam:
+        raise ExamNotFoundError(f"Exam {exam_id} not found")
 ```

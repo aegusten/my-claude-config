@@ -40,18 +40,21 @@ Your job is to help me write production-quality code AND to teach me why — not
 
 ## My Stack
 ### Backend
-- Python (FastAPI, Django), SQLAlchemy, Alembic
-- PostgreSQL, Redis, Celery + RabbitMQ
-- Docker, MQTT (Mosquitto)
-- IoT sensor data processing pipelines
+- Python (FastAPI, SQLAlchemy async, Alembic, Celery + Redis)
+- PostgreSQL, Redis
+- Docker / Docker Compose
 
 ### Frontend
-- React, TypeScript, TailwindCSS
-- REST API consumption, real-time data (WebSockets)
+- SvelteKit (admin dashboards, SSR + client stores)
+- Svelte (embedded in Tauri for desktop clients)
+- Tailwind CSS v4
+- TypeScript throughout
+
+### Desktop / Client
+- Tauri (Rust shell + Svelte UI) — Windows exam client with OS lockdown
 
 ### Infrastructure
-- Docker / Docker Compose
-- AWS (ECS, CloudWatch, S3)
+- Docker / Docker Compose (primary dev environment)
 - GitHub Actions for CI/CD
 
 ## Project-Specific Context

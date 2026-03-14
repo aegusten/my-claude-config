@@ -5,87 +5,108 @@ Load when designing systems, reviewing architecture decisions, or planning new f
 
 ---
 
-## IoT Data Pipeline Architecture
+## ExamBrowser Proctoring Pipeline
 
 ```
-[IoT Devices]
-     │ MQTT publish
-     ▼
-[Mosquitto Broker] ──auth──► reject unauthenticated
-     │
-     ▼
-[MQTT Consumer Service]  ← subscribes to device/+/sensors/+
-     │ validate payload
-     │ decode
-     ▼
-[Celery Queue (Redis)]
-     │
-     ▼
-[Celery Worker: process_reading]
-     ├──► [PostgreSQL] — persist raw reading
-     ├──► [Redis Cache] — update latest value per device
-     └──► [WebSocket Hub] — push to connected dashboards
+[Windows Exam Client (Tauri + Svelte)]
+        │
+        ├── POST /ingest/heartbeat  (every 5s) ──────────────────────────────┐
+        └── POST /ingest/event      (on behavior change) ────────────────────┤
+                                                                              ▼
+                                                        [Proctoring Service :8001]
+                                                        validate → write Incident → 204
+                                                        (on exam submit: enqueue score_session)
+                                                                              │
+                                                                    .delay() │ (submit only)
+                                                                              ▼
+                                                                    [Redis Queue]
+                                                                              │
+                                                                              ▼
+                                                              [score_session Celery task]
+                                                              compute risk score at submit
+                                                                              │
+                                                                     write risk_score ──────┐
+                                                                                            ▼
+                                                                                   [PostgreSQL]
+                                                                                            ▲
+                                                              [Core API :8000] ─────────────┘
+                                                              auth + exam CRUD
+                                                                              ▲
+                                                        [Admin Dashboard (SvelteKit)]
 ```
 
-**Key decisions in this pattern:**
-- MQTT consumer is lightweight — validate + enqueue only, never block
-- All heavy processing is async via Celery
-- Redis holds "current state" for fast dashboard reads
-- PostgreSQL holds historical data
+**NO ML SERVICE. NO CAMERA. Proctoring = client-side behavioral events only.**
 
----
-
-## Multi-Tenant Data Isolation Pattern
-
-```
-Tenant A ──► DB Router ──► tenant_a database
-Tenant B ──► DB Router ──► tenant_b database
-              │
-              └──► Global DB (user auth, tenant registry)
-```
-
-**When to use:** SaaS with strict data isolation requirements
-**Trade-off:** More complex migrations, but no risk of data leakage
+**Key decisions:**
+- Proctoring Service creates Incident rows directly (synchronous) — events are simple writes, no queue overhead
+- Celery only used for `score_session` task at submit — it's the only async work
+- `risk_score` and `incident_count` denormalized on `exam_sessions` for fast dashboard reads
 
 ---
 
 ## API Design Pattern
 
 ```
-POST   /api/v1/devices          — create device
-GET    /api/v1/devices          — list devices (paginated)
-GET    /api/v1/devices/{id}     — get device
-PATCH  /api/v1/devices/{id}     — partial update
-DELETE /api/v1/devices/{id}     — soft delete (never hard delete)
+POST   /api/v1/exams                    — create exam (admin)
+GET    /api/v1/exams                    — list (students see published only)
+GET    /api/v1/exams/{id}               — detail with questions
+PATCH  /api/v1/exams/{id}               — update (admin)
+DELETE /api/v1/exams/{id}               — set status=archived (soft delete)
 
-GET    /api/v1/devices/{id}/readings          — paginated readings
-POST   /api/v1/devices/{id}/readings/batch    — bulk ingest
-GET    /api/v1/devices/{id}/readings/latest   — most recent reading
+POST   /api/v1/exams/{id}/sessions      — student starts attempt
+GET    /api/v1/exams/{id}/sessions      — admin: all sessions for exam
+GET    /api/v1/sessions/{id}/incidents  — admin: incident timeline
+PATCH  /api/v1/incidents/{id}/dismiss   — admin: dismiss with reason
 ```
 
 **Rules:**
-- Always version your API (`/v1/`)
-- Use nouns not verbs in paths
+- Always version API (`/v1/`)
+- Nouns in paths, not verbs
 - Pagination on all list endpoints (default 20, max 100)
-- Soft delete — add `deleted_at` timestamp, never remove rows
-- Consistent response envelope: `{ data, meta, errors }`
+- Soft delete via status field (exams) or `is_dismissed` (incidents) — never hard delete exam data
+- Consistent error envelope: `{ "detail": "message" }` (FastAPI default)
 
 ---
 
-## Real-Time Alert Architecture
+## Multi-Incident Risk Scoring
 
 ```
-[New Reading] → [Celery Worker]
-                     │
-                     ├── check: value > threshold?
-                     │         YES → [Alert Service]
-                     │                    │
-                     │                    ├── [DB: log alert]
-                     │                    ├── [Redis: set alert state] ← prevents re-alerting
-                     │                    └── [Notification Queue] → email/SMS/webhook
-                     │
-                     └── NO → [Redis: clear alert state if was alerting]
+Session submit triggered
+        │
+[score_session Celery task]
+        │
+SELECT incidents WHERE proctoring_session_id = ? AND is_dismissed = false
+        │
+        ├── low      × 2
+        ├── medium    × 10
+        ├── high      × 25
+        └── critical  × 50
+        │
+        = raw_score → min(raw_score, 100) = final_risk_score
+        │
+UPDATE proctoring_sessions SET final_risk_score = ...
+UPDATE exam_sessions SET risk_score = ..., incident_count = ...
+        │
+        └── if risk_score >= 70 → SET status = 'flagged'
 ```
 
-**Key:** Use Redis to track alert state so you don't spam notifications.
-Only trigger notification on state CHANGE (normal→alert, alert→normal).
+---
+
+## Session State Machine
+
+```
+scheduled
+    │ student opens exam
+    ▼
+in_progress ──────────────────────────────────────────────────────────┐
+    │ student submits / time expires                                   │ client events detected
+    ▼                                                                  │ (focus_lost, fullscreen_exit)
+submitted                                                              ↓
+    │ score_session task runs                               incident rows created (inline)
+    ▼
+[risk_score < 70] → submitted (awaiting review)
+[risk_score >= 70] → flagged   ← admin must review and clear
+    │
+    ▼
+reviewed
+```

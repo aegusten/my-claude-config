@@ -1,146 +1,201 @@
 # Frontend Patterns Skill
 
 ## When to Use This Skill
-Load when writing React/TypeScript code, API integration, or real-time UI components.
+Load when writing SvelteKit (admin dashboard), Svelte-in-Tauri (exam client), or Tailwind v4 styling.
 
 ---
 
-## React Component Pattern
+## SvelteKit Load Function Pattern
 
-```tsx
-// ✅ CORRECT — typed props, clear separation
-interface SensorCardProps {
-  deviceId: string;
-  label: string;
-  unit: string;
-  onRefresh?: () => void;
-}
+```typescript
+// routes/exams/+page.server.ts
+import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import { apiGet } from '$lib/api/client';
+import type { ExamSummary } from '$lib/types/exam';
 
-export function SensorCard({ deviceId, label, unit, onRefresh }: SensorCardProps) {
-  const { data, isLoading, error } = useSensorReading(deviceId);
+export const load: PageServerLoad = async ({ locals }) => {
+  // Guard: redirect to login if not authenticated
+  if (!locals.user) redirect(302, '/login');
 
-  if (isLoading) return <SensorCardSkeleton />;
-  if (error) return <SensorCardError message={error.message} onRetry={onRefresh} />;
+  const exams = await apiGet<ExamSummary[]>('/exams');
+  return { exams };
+};
+```
 
-  return (
-    <div className="rounded-lg border p-4">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="text-2xl font-bold">
-        {data.value} <span className="text-sm">{unit}</span>
-      </p>
-    </div>
-  );
-}
+```svelte
+<!-- routes/exams/+page.svelte -->
+<script lang="ts">
+  import type { PageData } from './$types';
+  let { data }: { data: PageData } = $props();
+</script>
+
+{#each data.exams as exam}
+  <ExamCard {exam} />
+{/each}
 ```
 
 ---
 
-## API Client Pattern (with error handling)
+## Typed API Client Pattern
 
 ```typescript
-// lib/api.ts
-import axios, { AxiosError } from 'axios';
+// lib/api/client.ts — single place for all API calls
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
-export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  timeout: 10000,
-});
-
-// Request interceptor — attach auth token
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-// Response interceptor — handle 401 globally
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // clear token, redirect to login
-      localStorage.removeItem('access_token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
+export class ApiError extends Error {
+  constructor(public status: number, public body: unknown) {
+    super(`API error ${status}`);
   }
-);
-```
-
----
-
-## WebSocket Real-time Pattern
-
-```typescript
-// hooks/useDeviceStream.ts
-import { useEffect, useRef, useState } from 'react';
-
-interface SensorReading {
-  deviceId: string;
-  value: number;
-  unit: string;
-  recordedAt: string;
 }
 
-export function useDeviceStream(deviceId: string) {
-  const [reading, setReading] = useState<SensorReading | null>(null);
-  const [connected, setConnected] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/devices/${deviceId}/stream`);
-    wsRef.current = ws;
-
-    ws.onopen = () => setConnected(true);
-    ws.onclose = () => setConnected(false);
-    ws.onerror = () => setConnected(false);
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data) as SensorReading;
-        setReading(data);
-      } catch {
-        console.error('Failed to parse WebSocket message');
-      }
-    };
-
-    // Reconnection handled by returning cleanup
-    return () => {
-      ws.close();
-    };
-  }, [deviceId]);
-
-  return { reading, connected };
-}
-```
-
----
-
-## Form Validation Pattern (React Hook Form + Zod)
-
-```typescript
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-
-const schema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  threshold: z.number().min(0).max(9999),
-  unit: z.string().min(1).max(20),
-});
-
-type FormData = z.infer<typeof schema>;
-
-export function DeviceForm({ onSubmit }: { onSubmit: (data: FormData) => void }) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+export async function apiGet<T>(path: string): Promise<T> {
+  const token = localStorage.getItem('access_token');
+  const res = await fetch(`${BASE_URL}/api/v1${path}`, {
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json',
+    },
   });
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <input {...register('name')} />
-      {errors.name && <p className="text-red-500">{errors.name.message}</p>}
-      {/* ... */}
-    </form>
-  );
+  if (!res.ok) throw new ApiError(res.status, await res.json());
+  return res.json() as Promise<T>;
 }
+
+export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  const token = localStorage.getItem('access_token');
+  const res = await fetch(`${BASE_URL}/api/v1${path}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new ApiError(res.status, await res.json());
+  return res.json() as Promise<T>;
+}
+
+// Never do raw fetch in a component or page — always use this client
+```
+
+---
+
+## Svelte Component Pattern
+
+```svelte
+<!-- components/SessionCard.svelte -->
+<script lang="ts">
+  import type { SessionSummary } from '$lib/types/session';
+
+  interface Props {
+    session: SessionSummary;
+    onDismiss?: (id: string) => void;
+  }
+
+  let { session, onDismiss }: Props = $props();
+
+  // Derived state — no logic in template
+  const riskClass = $derived(
+    session.risk_score >= 70 ? 'text-red-600' :
+    session.risk_score >= 40 ? 'text-yellow-600' : 'text-green-600'
+  );
+</script>
+
+<div class="rounded-lg border p-4">
+  <p class="font-medium">{session.student_id}</p>
+  <p class={riskClass}>Risk: {session.risk_score}/100</p>
+  {#if session.status === 'flagged'}
+    <button onclick={() => onDismiss?.(session.id)}>Review</button>
+  {/if}
+</div>
+```
+
+---
+
+## Real-Time Polling Store Pattern
+
+```typescript
+// lib/stores/session-monitor.ts
+import { writable } from 'svelte/store';
+import { apiGet } from '$lib/api/client';
+import type { SessionDetail } from '$lib/types/session';
+
+export function createSessionMonitor(sessionId: string) {
+  const { subscribe, set } = writable<SessionDetail | null>(null);
+  let interval: ReturnType<typeof setInterval>;
+
+  async function refresh() {
+    try {
+      const data = await apiGet<SessionDetail>(`/sessions/${sessionId}`);
+      set(data);
+    } catch {
+      // Don't crash the monitor on a transient error
+    }
+  }
+
+  refresh(); // immediate first load
+  interval = setInterval(refresh, 5000);
+
+  return {
+    subscribe,
+    destroy: () => clearInterval(interval),
+  };
+}
+```
+
+```svelte
+<script lang="ts">
+  import { onDestroy } from 'svelte';
+  import { createSessionMonitor } from '$lib/stores/session-monitor';
+
+  const monitor = createSessionMonitor(sessionId);
+  onDestroy(monitor.destroy);
+</script>
+
+{#if $monitor}
+  <p>Risk score: {$monitor.risk_score}</p>
+{/if}
+```
+
+---
+
+## Tailwind v4 Theme Pattern
+
+```css
+/* app.css — v4 uses CSS-first config, no tailwind.config.js */
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2563eb;
+  --color-danger: #dc2626;
+  --color-warning: #d97706;
+  --color-success: #16a34a;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+```
+
+```svelte
+<!-- Use tokens in classes — no hardcoded hex values in markup -->
+<span class="text-[--color-danger]">Flagged</span>
+
+<!-- Or define semantic utility classes in app.css -->
+```
+
+---
+
+## SvelteKit Layout Guard Pattern
+
+```typescript
+// routes/admin/+layout.server.ts — protects all admin routes
+import { redirect } from '@sveltejs/kit';
+import type { LayoutServerLoad } from './$types';
+
+export const load: LayoutServerLoad = async ({ locals }) => {
+  if (!locals.user) redirect(302, '/login');
+  if (locals.user.role !== 'admin' && locals.user.role !== 'superadmin') {
+    redirect(302, '/unauthorized');
+  }
+  return { user: locals.user };
+};
 ```
