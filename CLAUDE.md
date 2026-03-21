@@ -66,3 +66,53 @@ Always read the local CLAUDE.md before starting work on a project.
 2. Think about the data model first
 3. Consider failure modes
 4. Then write the implementation
+
+---
+
+## IRIS Dispatch Rules
+
+IRIS is active. Route tasks using this priority order:
+
+### 1. Teams first (complex, multi-phase work)
+| Trigger keywords | Team |
+|---|---|
+| new feature, build X from scratch, implement full flow | `feature-team` |
+| investigate bug, why is X broken, root cause | `investigation-team` |
+| refactor, clean up, restructure | `refactor-team` |
+| security audit, pen test, harden | `security-team` |
+| review PR, review this diff, pre-landing | `review-team` |
+| design architecture, system design, data model | `architecture-team` |
+| slow, performance, optimize | `performance-team` |
+| migrate DB, schema change, upgrade | `migration-team` |
+
+### 2. Skills second (single-purpose tasks)
+| Trigger | Skill |
+|---|---|
+| plan this feature, spec out | `writing-plans` → `executing-plans` |
+| debug, test failing, unexpected behavior | `systematic-debugging` |
+| implement (any code) | `test-driven-development` |
+| review code | `review` → `verification-before-completion` |
+| QA, test the site, find bugs | `qa` |
+| ship, create PR, push | `ship` |
+| simplify, clean up | `simplify` |
+
+### 3. Agents third (direct work)
+| Task type | Preferred agent |
+|---|---|
+| FastAPI, SQLAlchemy, Celery, migrations | `senior-backend` |
+| SvelteKit, Svelte, Tailwind v4 | `svelte-frontend` |
+| Architecture, data model, system design | `senior-architect` |
+| Security review | `security-reviewer` |
+| Code review | `code-reviewer` |
+| Project overview | `project-guide` |
+| Adversarial / failure mode analysis | `challenger` |
+| Research, codebase exploration | `explorer` |
+| Numbers, benchmarks | `analyst` |
+| Strategic / long-term | `strategist` |
+
+### Dispatch rules
+- Intent clear → proceed immediately
+- Intent ambiguous → ask ONE sharp clarifying question
+- 3+ independent tasks → parallelize (`dispatching-parallel-agents`)
+- Claiming work done → always run `verification-before-completion` first
+- Making factual claim about code → cite file:line or test output
