@@ -1,7 +1,7 @@
 # my-claude-config
 
 > Personal Claude Code configuration for [@aegusten](https://github.com/aegusten)
-> Global agents, skills, and CLAUDE.md — synced across all machines.
+> Global agents, skills, and CLAUDE.md - synced across all machines.
 
 ---
 
@@ -32,6 +32,7 @@ my-claude-config/
 ## Setup on a New PC
 
 ### Windows (PowerShell as Admin)
+
 ```powershell
 git clone https://github.com/aegusten/my-claude-config.git
 cd my-claude-config
@@ -39,6 +40,7 @@ cd my-claude-config
 ```
 
 ### Linux / Mac
+
 ```bash
 git clone https://github.com/aegusten/my-claude-config.git
 cd my-claude-config
@@ -60,21 +62,21 @@ git push
 
 ## Agents Overview
 
-| Agent | Use When | Model |
-|---|---|---|
-| `project-guide` | "What are we building?" — overview, build status, plain-English explanations | Haiku |
-| `senior-backend` | FastAPI endpoints, models, Celery tasks, migrations | Sonnet |
-| `senior-architect` | New features, data models, system flows, infrastructure decisions | Opus |
-| `security-reviewer` | Auth code, public APIs, input handling, pre-deploy | Sonnet |
-| `code-reviewer` | PR reviews, general code quality | Sonnet |
-| `svelte-frontend` | Admin dashboard (SvelteKit), exam client UI (Svelte/Tauri) | Sonnet |
+| Agent               | Use When                                                                     | Model  |
+| ------------------- | ---------------------------------------------------------------------------- | ------ |
+| `project-guide`     | "What are we building?" - overview, build status, plain-English explanations | Haiku  |
+| `senior-backend`    | FastAPI endpoints, models, Celery tasks, migrations                          | Sonnet |
+| `senior-architect`  | New features, data models, system flows, infrastructure decisions            | Opus   |
+| `security-reviewer` | Auth code, public APIs, input handling, pre-deploy                           | Sonnet |
+| `code-reviewer`     | PR reviews, general code quality                                             | Sonnet |
+| `svelte-frontend`   | Admin dashboard (SvelteKit), exam client UI (Svelte/Tauri)                   | Sonnet |
 
 ## Skills Overview
 
-| Skill | Load When |
-|---|---|
-| `backend-patterns` | Writing Python/FastAPI code, reviewing service layer |
-| `architecture` | Planning new features, reviewing system design |
-| `security` | Auth, input validation, rate limiting |
-| `frontend-patterns` | SvelteKit pages, Svelte components, Tailwind v4 |
-| `proctoring-patterns` | Incident detection, ingest pipeline, risk scoring |
+| Skill                 | Load When                                            |
+| --------------------- | ---------------------------------------------------- |
+| `backend-patterns`    | Writing Python/FastAPI code, reviewing service layer |
+| `architecture`        | Planning new features, reviewing system design       |
+| `security`            | Auth, input validation, rate limiting                |
+| `frontend-patterns`   | SvelteKit pages, Svelte components, Tailwind v4      |
+| `proctoring-patterns` | Incident detection, ingest pipeline, risk scoring    |

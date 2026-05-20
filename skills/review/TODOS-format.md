@@ -9,10 +9,12 @@ Shared reference for the canonical TODOS.md format. Referenced by `/ship` (Step 
 ```markdown
 # TODOS
 
-## <Skill/Component>     ← e.g., ## Browse, ## Ship, ## Review, ## Infrastructure
+## <Skill/Component> ← e.g., ## Browse, ## Ship, ## Review, ## Infrastructure
+
 <items sorted P0 first, then P1, P2, P3, P4>
 
 ## Completed
+
 <finished items with completion annotation>
 ```
 
@@ -45,11 +47,11 @@ Each item is an H3 under its section:
 
 ## Priority Definitions
 
-- **P0** — Blocking: must be done before next release
-- **P1** — Critical: should be done this cycle
-- **P2** — Important: do when P0/P1 are clear
-- **P3** — Nice-to-have: revisit after adoption/usage data
-- **P4** — Someday: good idea, no urgency
+- **P0** - Blocking: must be done before next release
+- **P1** - Critical: should be done this cycle
+- **P2** - Important: do when P0/P1 are clear
+- **P3** - Nice-to-have: revisit after adoption/usage data
+- **P4** - Someday: good idea, no urgency
 
 ---
 

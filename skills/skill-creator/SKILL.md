@@ -12,7 +12,7 @@ This skill provides guidance for creating effective skills.
 
 Skills are modular, self-contained packages that extend Claude's capabilities by providing
 specialized knowledge, workflows, and tools. Think of them as "onboarding guides" for specific
-domains or tasks—they transform Claude from a general-purpose agent into a specialized agent
+domains or tasks-they transform Claude from a general-purpose agent into a specialized agent
 equipped with procedural knowledge that no model can fully possess.
 
 ### What Skills Provide
@@ -88,7 +88,7 @@ Documentation and reference material intended to be loaded as needed into contex
 - **Use cases**: Database schemas, API documentation, domain knowledge, company policies, detailed workflow guides
 - **Benefits**: Keeps SKILL.md lean, loaded only when Claude determines it's needed
 - **Best practice**: If files are large (>10k words), include grep search patterns in SKILL.md
-- **Avoid duplication**: Information should live in either SKILL.md or references files, not both. Prefer references files for detailed information unless it's truly core to the skill—this keeps SKILL.md lean while making information discoverable without hogging the context window. Keep only essential procedural instructions and workflow guidance in SKILL.md; move detailed reference material, schemas, and examples to references files.
+- **Avoid duplication**: Information should live in either SKILL.md or references files, not both. Prefer references files for detailed information unless it's truly core to the skill-this keeps SKILL.md lean while making information discoverable without hogging the context window. Keep only essential procedural instructions and workflow guidance in SKILL.md; move detailed reference material, schemas, and examples to references files.
 
 ##### Assets (`assets/`)
 
@@ -334,7 +334,6 @@ scripts/package_skill.py <path/to/skill-folder> ./dist
 The packaging script will:
 
 1. **Validate** the skill automatically, checking:
-
    - YAML frontmatter format and required fields
    - Skill naming conventions and directory structure
    - Description completeness and quality
@@ -365,13 +364,13 @@ Write test cases (pressure scenarios with subagents), watch them fail (baseline 
 
 ### TDD Mapping
 
-| TDD Concept | Skill Creation |
-|-------------|----------------|
-| Test case | Pressure scenario with subagent |
-| Production code | Skill document (SKILL.md) |
-| Test fails (RED) | Agent violates rule without skill |
-| Test passes (GREEN) | Agent complies with skill present |
-| Refactor | Close loopholes while maintaining compliance |
+| TDD Concept         | Skill Creation                               |
+| ------------------- | -------------------------------------------- |
+| Test case           | Pressure scenario with subagent              |
+| Production code     | Skill document (SKILL.md)                    |
+| Test fails (RED)    | Agent violates rule without skill            |
+| Test passes (GREEN) | Agent complies with skill present            |
+| Refactor            | Close loopholes while maintaining compliance |
 
 ### RED-GREEN-REFACTOR Cycle
 
@@ -384,6 +383,7 @@ Write test cases (pressure scenarios with subagents), watch them fail (baseline 
 ### Bulletproofing Against Rationalization
 
 For discipline-enforcing skills, close every loophole explicitly:
+
 - Don't just state the rule -- forbid specific workarounds
 - Add "Violating the letter of the rules is violating the spirit of the rules"
 - Build rationalization tables from baseline testing
@@ -400,15 +400,18 @@ For discipline-enforcing skills, close every loophole explicitly:
 ### TDD Checklist
 
 **RED Phase:**
+
 - [ ] Create pressure scenarios (3+ combined pressures for discipline skills)
 - [ ] Run scenarios WITHOUT skill -- document baseline behavior
 - [ ] Identify patterns in rationalizations
 
 **GREEN Phase:**
+
 - [ ] Write minimal skill addressing specific baseline failures
 - [ ] Run scenarios WITH skill -- verify compliance
 
 **REFACTOR Phase:**
+
 - [ ] Identify new rationalizations from testing
 - [ ] Add explicit counters
 - [ ] Re-test until bulletproof

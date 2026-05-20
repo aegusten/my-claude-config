@@ -1,6 +1,7 @@
 # Architecture Patterns Skill
 
 ## When to Use This Skill
+
 Load when designing systems, reviewing architecture decisions, or planning new features.
 
 ---
@@ -38,8 +39,9 @@ Load when designing systems, reviewing architecture decisions, or planning new f
 **NO ML SERVICE. NO CAMERA. Proctoring = client-side behavioral events only.**
 
 **Key decisions:**
-- Proctoring Service creates Incident rows directly (synchronous) — events are simple writes, no queue overhead
-- Celery only used for `score_session` task at submit — it's the only async work
+
+- Proctoring Service creates Incident rows directly (synchronous) - events are simple writes, no queue overhead
+- Celery only used for `score_session` task at submit - it's the only async work
 - `risk_score` and `incident_count` denormalized on `exam_sessions` for fast dashboard reads
 
 ---
@@ -47,23 +49,24 @@ Load when designing systems, reviewing architecture decisions, or planning new f
 ## API Design Pattern
 
 ```
-POST   /api/v1/exams                    — create exam (admin)
-GET    /api/v1/exams                    — list (students see published only)
-GET    /api/v1/exams/{id}               — detail with questions
-PATCH  /api/v1/exams/{id}               — update (admin)
-DELETE /api/v1/exams/{id}               — set status=archived (soft delete)
+POST   /api/v1/exams                    - create exam (admin)
+GET    /api/v1/exams                    - list (students see published only)
+GET    /api/v1/exams/{id}               - detail with questions
+PATCH  /api/v1/exams/{id}               - update (admin)
+DELETE /api/v1/exams/{id}               - set status=archived (soft delete)
 
-POST   /api/v1/exams/{id}/sessions      — student starts attempt
-GET    /api/v1/exams/{id}/sessions      — admin: all sessions for exam
-GET    /api/v1/sessions/{id}/incidents  — admin: incident timeline
-PATCH  /api/v1/incidents/{id}/dismiss   — admin: dismiss with reason
+POST   /api/v1/exams/{id}/sessions      - student starts attempt
+GET    /api/v1/exams/{id}/sessions      - admin: all sessions for exam
+GET    /api/v1/sessions/{id}/incidents  - admin: incident timeline
+PATCH  /api/v1/incidents/{id}/dismiss   - admin: dismiss with reason
 ```
 
 **Rules:**
+
 - Always version API (`/v1/`)
 - Nouns in paths, not verbs
 - Pagination on all list endpoints (default 20, max 100)
-- Soft delete via status field (exams) or `is_dismissed` (incidents) — never hard delete exam data
+- Soft delete via status field (exams) or `is_dismissed` (incidents) - never hard delete exam data
 - Consistent error envelope: `{ "detail": "message" }` (FastAPI default)
 
 ---

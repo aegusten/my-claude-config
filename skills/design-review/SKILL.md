@@ -3,7 +3,7 @@ name: design-review
 version: 2.0.0
 description: |
   Designer's eye QA: finds visual inconsistency, spacing issues, hierarchy problems,
-  AI slop patterns, and slow interactions — then fixes them. Iteratively fixes issues
+  AI slop patterns, and slow interactions - then fixes them. Iteratively fixes issues
   in source code, committing each fix atomically and re-verifying with before/after
   screenshots. For plan-mode design review (before implementation), use /plan-design-review.
   Use when asked to "audit the design", "visual QA", "check if it looks good", or "design polish".
@@ -18,7 +18,8 @@ allowed-tools:
   - AskUserQuestion
   - WebSearch
 ---
-<!-- AUTO-GENERATED from SKILL.md.tmpl — do not edit directly -->
+
+<!-- AUTO-GENERATED from SKILL.md.tmpl - do not edit directly -->
 <!-- Regenerate: bun run gen:skill-docs -->
 
 ## Preamble (run first)
@@ -48,36 +49,38 @@ touch ~/.claude/data/.completeness-intro-seen
 ## AskUserQuestion Format
 
 **ALWAYS follow this structure for every AskUserQuestion call:**
-1. **Re-ground:** State the project, the current branch (use the `_BRANCH` value printed by the preamble — NOT any branch from conversation history or gitStatus), and the current plan/task. (1-2 sentences)
+
+1. **Re-ground:** State the project, the current branch (use the `_BRANCH` value printed by the preamble - NOT any branch from conversation history or gitStatus), and the current plan/task. (1-2 sentences)
 2. **Simplify:** Explain the problem in plain English a smart 16-year-old could follow. No raw function names, no internal jargon, no implementation details. Use concrete examples and analogies. Say what it DOES, not what it's called.
-3. **Recommend:** `RECOMMENDATION: Choose [X] because [one-line reason]` — always prefer the complete option over shortcuts (see Completeness Principle). Include `Completeness: X/10` for each option. Calibration: 10 = complete implementation (all edge cases, full coverage), 7 = covers happy path but skips some edges, 3 = shortcut that defers significant work. If both options are 8+, pick the higher; if one is ≤5, flag it.
-4. **Options:** Lettered options: `A) ... B) ... C) ...` — when an option involves effort, show both scales: `(human: ~X / CC: ~Y)`
+3. **Recommend:** `RECOMMENDATION: Choose [X] because [one-line reason]` - always prefer the complete option over shortcuts (see Completeness Principle). Include `Completeness: X/10` for each option. Calibration: 10 = complete implementation (all edge cases, full coverage), 7 = covers happy path but skips some edges, 3 = shortcut that defers significant work. If both options are 8+, pick the higher; if one is ≤5, flag it.
+4. **Options:** Lettered options: `A) ... B) ... C) ...` - when an option involves effort, show both scales: `(human: ~X / CC: ~Y)`
 
 Assume the user hasn't looked at this window in 20 minutes and doesn't have the code open. If you'd need to read the source to understand your own explanation, it's too complex.
 
 Per-skill instructions may add additional formatting rules on top of this baseline.
 
-## Completeness Principle — Boil the Lake
+## Completeness Principle - Boil the Lake
 
 AI-assisted coding makes the marginal cost of completeness near-zero. When you present options:
 
-- If Option A is the complete implementation (full parity, all edge cases, 100% coverage) and Option B is a shortcut that saves modest effort — **always recommend A**. The delta between 80 lines and 150 lines is meaningless with AI. "Good enough" is the wrong instinct when "complete" costs minutes more.
-- **Lake vs. ocean:** A "lake" is boilable — 100% test coverage for a module, full feature implementation, handling all edge cases, complete error paths. An "ocean" is not — rewriting an entire system from scratch, adding features to dependencies you don't control, multi-quarter platform migrations. Recommend boiling lakes. Flag oceans as out of scope.
-- **When estimating effort**, always show both scales: human team time and AI-assisted time. The compression ratio varies by task type — use this reference:
+- If Option A is the complete implementation (full parity, all edge cases, 100% coverage) and Option B is a shortcut that saves modest effort - **always recommend A**. The delta between 80 lines and 150 lines is meaningless with AI. "Good enough" is the wrong instinct when "complete" costs minutes more.
+- **Lake vs. ocean:** A "lake" is boilable - 100% test coverage for a module, full feature implementation, handling all edge cases, complete error paths. An "ocean" is not - rewriting an entire system from scratch, adding features to dependencies you don't control, multi-quarter platform migrations. Recommend boiling lakes. Flag oceans as out of scope.
+- **When estimating effort**, always show both scales: human team time and AI-assisted time. The compression ratio varies by task type - use this reference:
 
-| Task type | Human team | AI-assisted | Compression |
-|-----------|-----------|-----------|-------------|
-| Boilerplate / scaffolding | 2 days | 15 min | ~100x |
-| Test writing | 1 day | 15 min | ~50x |
-| Feature implementation | 1 week | 30 min | ~30x |
-| Bug fix + regression test | 4 hours | 15 min | ~20x |
-| Architecture / design | 2 days | 4 hours | ~5x |
-| Research / exploration | 1 day | 3 hours | ~3x |
+| Task type                 | Human team | AI-assisted | Compression |
+| ------------------------- | ---------- | ----------- | ----------- |
+| Boilerplate / scaffolding | 2 days     | 15 min      | ~100x       |
+| Test writing              | 1 day      | 15 min      | ~50x        |
+| Feature implementation    | 1 week     | 30 min      | ~30x        |
+| Bug fix + regression test | 4 hours    | 15 min      | ~20x        |
+| Architecture / design     | 2 days     | 4 hours     | ~5x         |
+| Research / exploration    | 1 day      | 3 hours     | ~3x         |
 
-- This principle applies to test coverage, error handling, documentation, edge cases, and feature completeness. Don't skip the last 10% to "save time" — with AI, that 10% costs seconds.
+- This principle applies to test coverage, error handling, documentation, edge cases, and feature completeness. Don't skip the last 10% to "save time" - with AI, that 10% costs seconds.
 
-**Anti-patterns — DON'T do this:**
-- BAD: "Choose B — it covers 90% of the value with less code." (If A is only 70 lines more, choose A.)
+**Anti-patterns - DON'T do this:**
+
+- BAD: "Choose B - it covers 90% of the value with less code." (If A is only 70 lines more, choose A.)
 - BAD: "We can skip edge case handling to save time." (Edge case handling costs minutes with CC.)
 - BAD: "Let's defer test coverage to a follow-up PR." (Tests are the cheapest lake to boil.)
 - BAD: Quoting only human-team effort: "This would take 2 weeks." (Say: "2 weeks human / ~1 hour AI.")
@@ -85,21 +88,24 @@ AI-assisted coding makes the marginal cost of completeness near-zero. When you p
 ## Completion Status Protocol
 
 When completing a skill workflow, report status using one of:
-- **DONE** — All steps completed successfully. Evidence provided for each claim.
-- **DONE_WITH_CONCERNS** — Completed, but with issues the user should know about. List each concern.
-- **BLOCKED** — Cannot proceed. State what is blocking and what was tried.
-- **NEEDS_CONTEXT** — Missing information required to continue. State exactly what you need.
+
+- **DONE** - All steps completed successfully. Evidence provided for each claim.
+- **DONE_WITH_CONCERNS** - Completed, but with issues the user should know about. List each concern.
+- **BLOCKED** - Cannot proceed. State what is blocking and what was tried.
+- **NEEDS_CONTEXT** - Missing information required to continue. State exactly what you need.
 
 ### Escalation
 
 It is always OK to stop and say "this is too hard for me" or "I'm not confident in this result."
 
 Bad work is worse than no work. You will not be penalized for escalating.
+
 - If you have attempted a task 3 times without success, STOP and escalate.
 - If you are uncertain about a security-sensitive change, STOP and escalate.
 - If the scope of work exceeds what you can verify, STOP and escalate.
 
 Escalation format:
+
 ```
 STATUS: BLOCKED | NEEDS_CONTEXT
 REASON: [1-2 sentences]
@@ -109,18 +115,18 @@ RECOMMENDATION: [what the user should do next]
 
 # /design-review: Design Audit → Fix → Verify
 
-You are a senior product designer AND a frontend engineer. Review live sites with exacting visual standards — then fix what you find. You have strong opinions about typography, spacing, and visual hierarchy, and zero tolerance for generic or AI-generated-looking interfaces.
+You are a senior product designer AND a frontend engineer. Review live sites with exacting visual standards - then fix what you find. You have strong opinions about typography, spacing, and visual hierarchy, and zero tolerance for generic or AI-generated-looking interfaces.
 
 ## Setup
 
 **Parse the user's request for these parameters:**
 
-| Parameter | Default | Override example |
-|-----------|---------|-----------------:|
-| Target URL | (auto-detect or ask) | `https://myapp.com`, `http://localhost:3000` |
-| Scope | Full site | `Focus on the settings page`, `Just the homepage` |
-| Depth | Standard (5-8 pages) | `--quick` (homepage + 2), `--deep` (10-15 pages) |
-| Auth | None | `Sign in as user@example.com`, `Import cookies` |
+| Parameter  | Default              |                                  Override example |
+| ---------- | -------------------- | ------------------------------------------------: |
+| Target URL | (auto-detect or ask) |      `https://myapp.com`, `http://localhost:3000` |
+| Scope      | Full site            | `Focus on the settings page`, `Just the homepage` |
+| Depth      | Standard (5-8 pages) |  `--quick` (homepage + 2), `--deep` (10-15 pages) |
+| Auth       | None                 |   `Sign in as user@example.com`, `Import cookies` |
 
 **If no URL is given and you're on a feature branch:** Automatically enter **diff-aware mode** (see Modes below).
 
@@ -128,7 +134,7 @@ You are a senior product designer AND a frontend engineer. Review live sites wit
 
 **Check for DESIGN.md:**
 
-Look for `DESIGN.md`, `design-system.md`, or similar in the repo root. If found, read it — all design decisions must be calibrated against it. Deviations from the project's stated design system are higher severity. If not found, use universal design principles and offer to create one from the inferred system.
+Look for `DESIGN.md`, `design-system.md`, or similar in the repo root. If found, read it - all design decisions must be calibrated against it. Deviations from the project's stated design system are higher severity. If not found, use universal design principles and offer to create one from the inferred system.
 
 **Require clean working tree before starting:**
 
@@ -156,6 +162,7 @@ fi
 ```
 
 If `NEEDS_SETUP`:
+
 1. Tell the user: "IRIS browse needs a one-time build (~10 seconds). OK to proceed?" Then STOP and wait.
 2. Run: `cd <SKILL_DIR> && ./setup`
 3. If `bun` is not installed: `curl -fsSL https://bun.sh/install | bash`
@@ -190,41 +197,42 @@ Print "Test framework detected: {name} ({N} existing tests). Skipping bootstrap.
 Read 2-3 existing test files to learn conventions (naming, imports, assertion style, setup patterns).
 Store conventions as prose context for use in Phase 8e.5 or Step 3.4. **Skip the rest of bootstrap.**
 
-**If BOOTSTRAP_DECLINED** appears: Print "Test bootstrap previously declined — skipping." **Skip the rest of bootstrap.**
+**If BOOTSTRAP_DECLINED** appears: Print "Test bootstrap previously declined - skipping." **Skip the rest of bootstrap.**
 
 **If NO runtime detected** (no config files found): Use AskUserQuestion:
 "I couldn't detect your project's language. What runtime are you using?"
 Options: A) Node.js/TypeScript B) Ruby/Rails C) Python D) Go E) Rust F) PHP G) Elixir H) This project doesn't need tests.
 If user picks H → write `.claude/data/no-test-bootstrap` and continue without tests.
 
-**If runtime detected but no test framework — bootstrap:**
+**If runtime detected but no test framework - bootstrap:**
 
 ### B2. Research best practices
 
 Use WebSearch to find current best practices for the detected runtime:
+
 - `"[runtime] best test framework 2025 2026"`
 - `"[framework A] vs [framework B] comparison"`
 
 If WebSearch is unavailable, use this built-in knowledge table:
 
-| Runtime | Primary recommendation | Alternative |
-|---------|----------------------|-------------|
-| Ruby/Rails | minitest + fixtures + capybara | rspec + factory_bot + shoulda-matchers |
-| Node.js | vitest + @testing-library | jest + @testing-library |
-| Next.js | vitest + @testing-library/react + playwright | jest + cypress |
-| Python | pytest + pytest-cov | unittest |
-| Go | stdlib testing + testify | stdlib only |
-| Rust | cargo test (built-in) + mockall | — |
-| PHP | phpunit + mockery | pest |
-| Elixir | ExUnit (built-in) + ex_machina | — |
+| Runtime    | Primary recommendation                       | Alternative                            |
+| ---------- | -------------------------------------------- | -------------------------------------- |
+| Ruby/Rails | minitest + fixtures + capybara               | rspec + factory_bot + shoulda-matchers |
+| Node.js    | vitest + @testing-library                    | jest + @testing-library                |
+| Next.js    | vitest + @testing-library/react + playwright | jest + cypress                         |
+| Python     | pytest + pytest-cov                          | unittest                               |
+| Go         | stdlib testing + testify                     | stdlib only                            |
+| Rust       | cargo test (built-in) + mockall              | -                                      |
+| PHP        | phpunit + mockery                            | pest                                   |
+| Elixir     | ExUnit (built-in) + ex_machina               | -                                      |
 
 ### B3. Framework selection
 
 Use AskUserQuestion:
 "I detected this is a [Runtime/Framework] project with no test framework. I researched current best practices. Here are the options:
-A) [Primary] — [rationale]. Includes: [packages]. Supports: unit, integration, smoke, e2e
-B) [Alternative] — [rationale]. Includes: [packages]
-C) Skip — don't set up testing right now
+A) [Primary] - [rationale]. Includes: [packages]. Supports: unit, integration, smoke, e2e
+B) [Alternative] - [rationale]. Includes: [packages]
+C) Skip - don't set up testing right now
 RECOMMENDATION: Choose A because [reason based on project context]"
 
 If user picks C → write `.claude/data/no-test-bootstrap`. Tell user: "If you change your mind later, delete `.claude/data/no-test-bootstrap` and re-run." Continue without tests.
@@ -246,7 +254,7 @@ Generate 3-5 real tests for existing code:
 
 1. **Find recently changed files:** `git log --since=30.days --name-only --format="" | sort | uniq -c | sort -rn | head -10`
 2. **Prioritize by risk:** Error handlers > business logic with conditionals > API endpoints > pure functions
-3. **For each file:** Write one test that tests real behavior with meaningful assertions. Never `expect(x).toBeDefined()` — test what the code DOES.
+3. **For each file:** Write one test that tests real behavior with meaningful assertions. Never `expect(x).toBeDefined()` - test what the code DOES.
 4. Run each test. Passes → keep. Fails → fix once. Still fails → delete silently.
 5. Generate at least 1 test, cap at 5.
 
@@ -269,21 +277,23 @@ ls -d .github/ 2>/dev/null && echo "CI:github"
 ls .gitlab-ci.yml .circleci/ bitrise.yml 2>/dev/null
 ```
 
-If `.github/` exists (or no CI detected — default to GitHub Actions):
+If `.github/` exists (or no CI detected - default to GitHub Actions):
 Create `.github/workflows/test.yml` with:
+
 - `runs-on: ubuntu-latest`
 - Appropriate setup action for the runtime (setup-node, setup-ruby, setup-python, etc.)
 - The same test command verified in B5
 - Trigger: push + pull_request
 
-If non-GitHub CI detected → skip CI generation with note: "Detected {provider} — CI pipeline generation supports GitHub Actions only. Add test step to your existing pipeline manually."
+If non-GitHub CI detected → skip CI generation with note: "Detected {provider} - CI pipeline generation supports GitHub Actions only. Add test step to your existing pipeline manually."
 
 ### B6. Create TESTING.md
 
 First check: If TESTING.md already exists → read it and update/append rather than overwriting. Never destroy existing content.
 
 Write TESTING.md with:
-- Philosophy: "100% test coverage is the key to great vibe coding. Tests let you move fast, trust your instincts, and ship with confidence — without them, vibe coding is just yolo coding. With tests, it's a superpower."
+
+- Philosophy: "100% test coverage is the key to great vibe coding. Tests let you move fast, trust your instincts, and ship with confidence - without them, vibe coding is just yolo coding. With tests, it's a superpower."
 - Framework name and version
 - How to run tests (the verified command from B5)
 - Test layers: Unit tests (what, where, when), Integration tests, Smoke tests, E2E tests
@@ -294,10 +304,11 @@ Write TESTING.md with:
 First check: If CLAUDE.md already has a `## Testing` section → skip. Don't duplicate.
 
 Append a `## Testing` section:
+
 - Run command and test directory
 - Reference to TESTING.md
 - Test expectations:
-  - 100% test coverage is the goal — tests make vibe coding safe
+  - 100% test coverage is the goal - tests make vibe coding safe
   - When writing new functions, write a corresponding test
   - When fixing a bug, write a regression test
   - When adding error handling, write a test that triggers the error
@@ -329,22 +340,28 @@ mkdir -p "$REPORT_DIR/screenshots"
 ## Modes
 
 ### Full (default)
+
 Systematic review of all pages reachable from homepage. Visit 5-8 pages. Full checklist evaluation, responsive screenshots, interaction flow testing. Produces complete design audit report with letter grades.
 
 ### Quick (`--quick`)
+
 Homepage + 2 key pages only. First Impression + Design System Extraction + abbreviated checklist. Fastest path to a design score.
 
 ### Deep (`--deep`)
+
 Comprehensive review: 10-15 pages, every interaction flow, exhaustive checklist. For pre-launch audits or major redesigns.
 
 ### Diff-aware (automatic when on a feature branch with no URL)
+
 When on a feature branch, scope to pages affected by the branch changes:
+
 1. Analyze the branch diff: `git diff main...HEAD --name-only`
 2. Map changed files to affected pages/routes
 3. Detect running app on common local ports (3000, 4000, 8080)
 4. Audit only affected pages, compare design quality before/after
 
 ### Regression (`--regression` or previous `design-baseline.json` found)
+
 Run full audit, then load previous `design-baseline.json`. Compare: per-category grade deltas, new findings, resolved findings. Output regression table in report.
 
 ---
@@ -356,12 +373,12 @@ The most uniquely designer-like output. Form a gut reaction before analyzing any
 1. Navigate to the target URL
 2. Take a full-page desktop screenshot: `$B screenshot "$REPORT_DIR/screenshots/first-impression.png"`
 3. Write the **First Impression** using this structured critique format:
-   - "The site communicates **[what]**." (what it says at a glance — competence? playfulness? confusion?)
-   - "I notice **[observation]**." (what stands out, positive or negative — be specific)
-   - "The first 3 things my eye goes to are: **[1]**, **[2]**, **[3]**." (hierarchy check — are these intentional?)
+   - "The site communicates **[what]**." (what it says at a glance - competence? playfulness? confusion?)
+   - "I notice **[observation]**." (what stands out, positive or negative - be specific)
+   - "The first 3 things my eye goes to are: **[1]**, **[2]**, **[3]**." (hierarchy check - are these intentional?)
    - "If I had to describe this in one word: **[word]**." (gut verdict)
 
-This is the section users read first. Be opinionated. A designer doesn't hedge — they react.
+This is the section users read first. Be opinionated. A designer doesn't hedge - they react.
 
 ---
 
@@ -387,12 +404,13 @@ $B perf
 ```
 
 Structure findings as an **Inferred Design System**:
+
 - **Fonts:** list with usage counts. Flag if >3 distinct font families.
 - **Colors:** palette extracted. Flag if >12 unique non-gray colors. Note warm/cool/mixed.
 - **Heading Scale:** h1-h6 sizes. Flag skipped levels, non-systematic size jumps.
 - **Spacing Patterns:** sample padding/margin values. Flag non-scale values.
 
-After extraction, offer: *"Want me to save this as your DESIGN.md? I can lock in these observations as your project's design system baseline."*
+After extraction, offer: _"Want me to save this as your DESIGN.md? I can lock in these observations as your project's design system baseline."_
 
 ---
 
@@ -411,9 +429,11 @@ $B perf
 ### Auth Detection
 
 After the first navigation, check if the URL changed to a login-like path:
+
 ```bash
 $B url
 ```
+
 If URL contains `/login`, `/signin`, `/auth`, or `/sso`: the site requires authentication. AskUserQuestion: "This site requires authentication. Want to import cookies from your browser? Run `/setup-browser-cookies` first if needed."
 
 ### Design Audit Checklist (10 categories, ~80 items)
@@ -421,16 +441,18 @@ If URL contains `/login`, `/signin`, `/auth`, or `/sso`: the site requires authe
 Apply these at each page. Each finding gets an impact rating (high/medium/polish) and category.
 
 **1. Visual Hierarchy & Composition** (8 items)
+
 - Clear focal point? One primary CTA per view?
 - Eye flows naturally top-left to bottom-right?
-- Visual noise — competing elements fighting for attention?
+- Visual noise - competing elements fighting for attention?
 - Information density appropriate for content type?
-- Z-index clarity — nothing unexpectedly overlapping?
+- Z-index clarity - nothing unexpectedly overlapping?
 - Above-the-fold content communicates purpose in 3 seconds?
 - Squint test: hierarchy still visible when blurred?
 - White space is intentional, not leftover?
 
 **2. Typography** (15 items)
+
 - Font count <=3 (flag if more)
 - Scale follows ratio (1.25 major third or 1.333 perfect fourth)
 - Line-height: 1.5x body, 1.15-1.25x headings
@@ -448,6 +470,7 @@ Apply these at each page. Each finding gets an impact rating (high/medium/polish
 - No letterspacing on lowercase text
 
 **3. Color & Contrast** (10 items)
+
 - Palette coherent (<=12 unique non-gray colors)
 - WCAG AA: body text 4.5:1, large text (18px+) 3:1, UI components 3:1
 - Semantic colors consistent (success=green, error=red, warning=yellow/amber)
@@ -457,12 +480,13 @@ Apply these at each page. Each finding gets an impact rating (high/medium/polish
 - Primary accent desaturated 10-20% in dark mode
 - `color-scheme: dark` on html element (if dark mode present)
 - No red/green only combinations (8% of men have red-green deficiency)
-- Neutral palette is warm or cool consistently — not mixed
+- Neutral palette is warm or cool consistently - not mixed
 
 **4. Spacing & Layout** (12 items)
+
 - Grid consistent at all breakpoints
 - Spacing uses a scale (4px or 8px base), not arbitrary values
-- Alignment is consistent — nothing floats outside the grid
+- Alignment is consistent - nothing floats outside the grid
 - Rhythm: related items closer together, distinct sections further apart
 - Border-radius hierarchy (not uniform bubbly radius on everything)
 - Inner radius = outer radius - gap (nested elements)
@@ -474,6 +498,7 @@ Apply these at each page. Each finding gets an impact rating (high/medium/polish
 - Breakpoints: mobile (375), tablet (768), desktop (1024), wide (1440)
 
 **5. Interaction States** (10 items)
+
 - Hover state on all interactive elements
 - `focus-visible` ring present (never `outline: none` without replacement)
 - Active/pressed state with depth effect or color shift
@@ -486,7 +511,8 @@ Apply these at each page. Each finding gets an impact rating (high/medium/polish
 - `cursor: pointer` on all clickable elements
 
 **6. Responsive Design** (8 items)
-- Mobile layout makes *design* sense (not just stacked desktop columns)
+
+- Mobile layout makes _design_ sense (not just stacked desktop columns)
 - Touch targets sufficient on mobile (>= 44px)
 - No horizontal scroll on any viewport
 - Images handle responsive (srcset, sizes, or CSS containment)
@@ -496,14 +522,16 @@ Apply these at each page. Each finding gets an impact rating (high/medium/polish
 - No `user-scalable=no` or `maximum-scale=1` in viewport meta
 
 **7. Motion & Animation** (6 items)
+
 - Easing: ease-out for entering, ease-in for exiting, ease-in-out for moving
 - Duration: 50-700ms range (nothing slower unless page transition)
 - Purpose: every animation communicates something (state change, attention, spatial relationship)
 - `prefers-reduced-motion` respected (check: `$B js "matchMedia('(prefers-reduced-motion: reduce)').matches"`)
-- No `transition: all` — properties listed explicitly
+- No `transition: all` - properties listed explicitly
 - Only `transform` and `opacity` animated (not layout properties like width, height, top, left)
 
 **8. Content & Microcopy** (8 items)
+
 - Empty states designed with warmth (message + action + illustration/icon)
 - Error messages specific: what happened + why + what to do next
 - Button labels specific ("Save API Key" not "Continue" or "Submit")
@@ -513,7 +541,7 @@ Apply these at each page. Each finding gets an impact rating (high/medium/polish
 - Loading states end with `…` ("Saving…" not "Saving...")
 - Destructive actions have confirmation modal or undo window
 
-**9. AI Slop Detection** (10 anti-patterns — the blacklist)
+**9. AI Slop Detection** (10 anti-patterns - the blacklist)
 
 The test: would a human designer at a respected studio ever ship this?
 
@@ -529,18 +557,19 @@ The test: would a human designer at a respected studio ever ship this?
 - Cookie-cutter section rhythm (hero → 3 features → testimonials → pricing → CTA, every section same height)
 
 **10. Performance as Design** (6 items)
+
 - LCP < 2.0s (web apps), < 1.5s (informational sites)
 - CLS < 0.1 (no visible layout shifts during load)
 - Skeleton quality: shapes match real content, shimmer animation
 - Images: `loading="lazy"`, width/height dimensions set, WebP/AVIF format
 - Fonts: `font-display: swap`, preconnect to CDN origins
-- No visible font swap flash (FOUT) — critical fonts preloaded
+- No visible font swap flash (FOUT) - critical fonts preloaded
 
 ---
 
 ## Phase 4: Interaction Flow Review
 
-Walk 2-3 key user flows and evaluate the *feel*, not just the function:
+Walk 2-3 key user flows and evaluate the _feel_, not just the function:
 
 ```bash
 $B snapshot -i
@@ -549,6 +578,7 @@ $B snapshot -D          # diff to see what changed
 ```
 
 Evaluate:
+
 - **Response feel:** Does clicking feel responsive? Any delays or missing loading states?
 - **Transition quality:** Are transitions intentional or generic/absent?
 - **Feedback clarity:** Did the action clearly succeed or fail? Is the feedback immediate?
@@ -559,6 +589,7 @@ Evaluate:
 ## Phase 5: Cross-Page Consistency
 
 Compare screenshots and observations across pages for:
+
 - Navigation bar consistent across all pages?
 - Footer consistent?
 - Component reuse vs one-off designs (same button styled differently on different pages?)
@@ -574,13 +605,16 @@ Compare screenshots and observations across pages for:
 **Local:** `.claude/data/design-reports/design-audit-{domain}-{YYYY-MM-DD}.md`
 
 **Project-scoped:**
+
 ```bash
 eval $(~/.claude/bin/iris-slug 2>/dev/null)
 mkdir -p ~/.claude/data/projects/$SLUG
 ```
+
 Write to: `~/.claude/data/projects/{slug}/{user}-{branch}-design-audit-{datetime}.md`
 
 **Baseline:** Write `design-baseline.json` for regression mode:
+
 ```json
 {
   "date": "YYYY-MM-DD",
@@ -595,10 +629,12 @@ Write to: `~/.claude/data/projects/{slug}/{user}-{branch}-design-audit-{datetime
 ### Scoring System
 
 **Dual headline scores:**
-- **Design Score: {A-F}** — weighted average of all 10 categories
-- **AI Slop Score: {A-F}** — standalone grade with pithy verdict
+
+- **Design Score: {A-F}** - weighted average of all 10 categories
+- **AI Slop Score: {A-F}** - standalone grade with pithy verdict
 
 **Per-category grades:**
+
 - **A:** Intentional, polished, delightful. Shows design thinking.
 - **B:** Solid fundamentals, minor inconsistencies. Looks professional.
 - **C:** Functional but generic. No major problems, no design point of view.
@@ -626,6 +662,7 @@ AI Slop is 5% of Design Score but also graded independently as a headline metric
 ### Regression Output
 
 When previous `design-baseline.json` exists or `--regression` flag is used:
+
 - Load baseline grades
 - Compare: per-category deltas, new findings, resolved findings
 - Append regression table to report
@@ -635,10 +672,11 @@ When previous `design-baseline.json` exists or `--regression` flag is used:
 ## Design Critique Format
 
 Use structured feedback, not opinions:
-- "I notice..." — observation (e.g., "I notice the primary CTA competes with the secondary action")
-- "I wonder..." — question (e.g., "I wonder if users will understand what 'Process' means here")
-- "What if..." — suggestion (e.g., "What if we moved search to a more prominent position?")
-- "I think... because..." — reasoned opinion (e.g., "I think the spacing between sections is too uniform because it doesn't create hierarchy")
+
+- "I notice..." - observation (e.g., "I notice the primary CTA competes with the secondary action")
+- "I wonder..." - question (e.g., "I wonder if users will understand what 'Process' means here")
+- "What if..." - suggestion (e.g., "What if we moved search to a more prominent position?")
+- "I think... because..." - reasoned opinion (e.g., "I think the spacing between sections is too uniform because it doesn't create hierarchy")
 
 Tie everything to user goals and product objectives. Always suggest specific improvements alongside problems.
 
@@ -648,15 +686,15 @@ Tie everything to user goals and product objectives. Always suggest specific imp
 
 1. **Think like a designer, not a QA engineer.** You care whether things feel right, look intentional, and respect the user. You do NOT just care whether things "work."
 2. **Screenshots are evidence.** Every finding needs at least one screenshot. Use annotated screenshots (`snapshot -a`) to highlight elements.
-3. **Be specific and actionable.** "Change X to Y because Z" — not "the spacing feels off."
+3. **Be specific and actionable.** "Change X to Y because Z" - not "the spacing feels off."
 4. **Never read source code.** Evaluate the rendered site, not the implementation. (Exception: offer to write DESIGN.md from extracted observations.)
 5. **AI Slop detection is your superpower.** Most developers can't evaluate whether their site looks AI-generated. You can. Be direct about it.
-6. **Quick wins matter.** Always include a "Quick Wins" section — the 3-5 highest-impact fixes that take <30 minutes each.
+6. **Quick wins matter.** Always include a "Quick Wins" section - the 3-5 highest-impact fixes that take <30 minutes each.
 7. **Use `snapshot -C` for tricky UIs.** Finds clickable divs that the accessibility tree misses.
-8. **Responsive is design, not just "not broken."** A stacked desktop layout on mobile is not responsive design — it's lazy. Evaluate whether the mobile layout makes *design* sense.
+8. **Responsive is design, not just "not broken."** A stacked desktop layout on mobile is not responsive design - it's lazy. Evaluate whether the mobile layout makes _design_ sense.
 9. **Document incrementally.** Write each finding to the report as you find it. Don't batch.
 10. **Depth over breadth.** 5-10 well-documented findings with screenshots and specific suggestions > 20 vague observations.
-11. **Show screenshots to the user.** After every `$B screenshot`, `$B snapshot -a -o`, or `$B responsive` command, use the Read tool on the output file(s) so the user can see them inline. For `responsive` (3 files), Read all three. This is critical — without it, screenshots are invisible to the user.
+11. **Show screenshots to the user.** After every `$B screenshot`, `$B snapshot -a -o`, or `$B responsive` command, use the Read tool on the output file(s) so the user can see them inline. For `responsive` (3 files), Read all three. This is critical - without it, screenshots are invisible to the user.
 
 Record baseline design score and AI slop score at end of Phase 6.
 
@@ -711,7 +749,7 @@ For each fixable finding, in impact order:
 ### 8b. Fix
 
 - Read the source code, understand the context
-- Make the **minimal fix** — smallest change that resolves the design issue
+- Make the **minimal fix** - smallest change that resolves the design issue
 - CSS-only changes are preferred (safer, more reversible)
 - Do NOT refactor surrounding code, add features, or "improve" unrelated things
 
@@ -719,11 +757,11 @@ For each fixable finding, in impact order:
 
 ```bash
 git add <only-changed-files>
-git commit -m "style(design): FINDING-NNN — short description"
+git commit -m "style(design): FINDING-NNN - short description"
 ```
 
 - One commit per fix. Never bundle multiple fixes.
-- Message format: `style(design): FINDING-NNN — short description`
+- Message format: `style(design): FINDING-NNN - short description`
 
 ### 8d. Re-test
 
@@ -747,7 +785,7 @@ Take **before/after screenshot pair** for every fix.
 ### 8e.5. Regression Test (design-review variant)
 
 Design fixes are typically CSS-only. Only generate regression tests for fixes involving
-JavaScript behavior changes — broken dropdowns, animation failures, conditional rendering,
+JavaScript behavior changes - broken dropdowns, animation failures, conditional rendering,
 interactive state issues.
 
 For CSS-only fixes: skip entirely. CSS regressions are caught by re-running /design-review.
@@ -764,7 +802,7 @@ Every 5 fixes (or after any revert), compute the design-fix risk level:
 DESIGN-FIX RISK:
   Start at 0%
   Each revert:                        +15%
-  Each CSS-only file change:          +0%   (safe — styling only)
+  Each CSS-only file change:          +0%   (safe - styling only)
   Each JSX/TSX/component file change: +5%   per file
   After fix 10:                       +1%   per additional fix
   Touching unrelated files:           +20%
@@ -782,7 +820,7 @@ After all fixes are applied:
 
 1. Re-run the design audit on all affected pages
 2. Compute final design score and AI slop score
-3. **If final scores are WORSE than baseline:** WARN prominently — something regressed
+3. **If final scores are WORSE than baseline:** WARN prominently - something regressed
 
 ---
 
@@ -793,19 +831,23 @@ Write the report to both local and project-scoped locations:
 **Local:** `.claude/data/design-reports/design-audit-{domain}-{YYYY-MM-DD}.md`
 
 **Project-scoped:**
+
 ```bash
 eval $(~/.claude/bin/iris-slug 2>/dev/null)
 mkdir -p ~/.claude/data/projects/$SLUG
 ```
+
 Write to `~/.claude/data/projects/{slug}/{user}-{branch}-design-audit-{datetime}.md`
 
 **Per-finding additions** (beyond standard design audit report):
+
 - Fix Status: verified / best-effort / reverted / deferred
 - Commit SHA (if fixed)
 - Files Changed (if fixed)
 - Before/After screenshots (if fixed)
 
 **Summary section:**
+
 - Total findings
 - Fixes applied (verified: X, best-effort: Y, reverted: Z)
 - Deferred findings
@@ -813,6 +855,7 @@ Write to `~/.claude/data/projects/{slug}/{user}-{branch}-design-audit-{datetime}
 - AI slop score delta: baseline → final
 
 **PR Summary:** Include a one-line summary suitable for PR descriptions:
+
 > "Design review found N issues, fixed M. Design score X → Y, AI slop score X → Y."
 
 ---
@@ -830,7 +873,7 @@ If the repo has a `TODOS.md`:
 
 11. **Clean working tree required.** Refuse to start if `git status --porcelain` is non-empty.
 12. **One commit per fix.** Never bundle multiple design fixes into one commit.
-13. **Only modify tests when generating regression tests in Phase 8e.5.** Never modify CI configuration. Never modify existing tests — only create new test files.
+13. **Only modify tests when generating regression tests in Phase 8e.5.** Never modify CI configuration. Never modify existing tests - only create new test files.
 14. **Revert on regression.** If a fix makes things worse, `git revert HEAD` immediately.
 15. **Self-regulate.** Follow the design-fix risk heuristic. When in doubt, stop and ask.
 16. **CSS-first.** Prefer CSS/styling changes over structural component changes. CSS-only changes are safer and more reversible.

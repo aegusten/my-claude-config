@@ -1,19 +1,20 @@
 # Proctoring Patterns Skill
 
 ## When to Use This Skill
+
 Load when writing proctoring-service code, designing incident detection rules, or scoring sessions.
 
-**No ML. No camera. Proctoring is behavioral only — client-side events from the locked-down Tauri client.**
+**No ML. No camera. Proctoring is behavioral only - client-side events from the locked-down Tauri client.**
 
 ---
 
 ## Incident Types and Severity
 
-| Incident Type       | Source          | Severity | Points |
-|---------------------|-----------------|----------|--------|
-| `focus_lost`        | Client-reported | medium   | 10     |
-| `fullscreen_exit`   | Client-reported | medium   | 10     |
-| `admin_flagged`     | Admin manual    | critical | 50     |
+| Incident Type     | Source          | Severity | Points |
+| ----------------- | --------------- | -------- | ------ |
+| `focus_lost`      | Client-reported | medium   | 10     |
+| `fullscreen_exit` | Client-reported | medium   | 10     |
+| `admin_flagged`   | Admin manual    | critical | 50     |
 
 **Scoring:** `min(sum of non-dismissed incident points, 100)`
 **Auto-flag threshold:** `risk_score >= 70`
@@ -23,7 +24,7 @@ Load when writing proctoring-service code, designing incident detection rules, o
 ## Ingest Endpoint Pattern
 
 ```python
-# Events are simple DB writes — no Celery needed for ingest
+# Events are simple DB writes - no Celery needed for ingest
 @router.post("/event", status_code=204)
 async def behavior_event(payload: BehaviorEvent, db: ...) -> None:
     session = await get_proctoring_session(db, payload.session_id)

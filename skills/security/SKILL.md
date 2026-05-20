@@ -1,6 +1,7 @@
 # Security Patterns Skill
 
 ## When to Use This Skill
+
 Load when writing authentication, building public APIs, or reviewing for security.
 
 ---
@@ -41,7 +42,7 @@ async def get_current_user(
 ## Authorization Pattern (Resource Ownership)
 
 ```python
-# Student can only access their OWN sessions — always check ownership
+# Student can only access their OWN sessions - always check ownership
 async def get_session_or_403(
     session_id: UUID,
     current_user: CurrentUser,
@@ -87,7 +88,7 @@ class ExamCreate(BaseModel):
 ## Rate Limiting Pattern (Redis)
 
 ```python
-# middleware/rate_limit.py — apply to login endpoint
+# middleware/rate_limit.py - apply to login endpoint
 import redis.asyncio as redis_asyncio
 from fastapi import Request, HTTPException
 
@@ -120,13 +121,13 @@ async def rate_limit(
 ## Environment Variables Pattern
 
 ```python
-# config.py — NEVER hardcode secrets
+# config.py - NEVER hardcode secrets
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    # Required — will raise ValidationError on startup if missing
+    # Required - will raise ValidationError on startup if missing
     secret_key: str
     database_url: str
     redis_url: str
@@ -139,14 +140,14 @@ class Settings(BaseSettings):
 settings = Settings()  # fails fast if required vars are missing
 ```
 
-**Never commit `.env` — always commit `.env.example` with placeholder values.**
+**Never commit `.env` - always commit `.env.example` with placeholder values.**
 
 ---
 
 ## Proctoring Event Trust Model
 
 ```python
-# Client-reported events ARE trusted — they come from the locked-down Tauri client.
+# Client-reported events ARE trusted - they come from the locked-down Tauri client.
 # Do NOT add server-side verification or second-guess the event type.
 # DO reject timestamps too far in the future (clock skew protection):
 

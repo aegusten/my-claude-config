@@ -1,5 +1,5 @@
 #!/bin/bash
-# install.sh — Run on Linux/Mac to symlink Claude config
+# install.sh - Run on Linux/Mac to symlink Claude config
 # Usage: bash install.sh
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -13,7 +13,7 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null)
 PR_NUMBER=$(gh pr view --json number --jq '.number' 2>/dev/null)
 ```
 
-**If either fails or is empty:** Skip Greptile triage silently. This integration is additive — the workflow works without it.
+**If either fails or is empty:** Skip Greptile triage silently. This integration is additive - the workflow works without it.
 
 ```bash
 # Fetch line-level review comments AND top-level PR comments in parallel
@@ -33,6 +33,7 @@ The `position != null` filter on line-level comments automatically skips outdate
 ## Suppressions Check
 
 Derive the project-specific history path:
+
 ```bash
 REMOTE_SLUG=$(browse/bin/remote-slug 2>/dev/null || ~/.claude/skills/gstack/browse/bin/remote-slug 2>/dev/null || basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
 PROJECT_HISTORY="$HOME/.gstack/projects/$REMOTE_SLUG/greptile-history.md"
@@ -47,6 +48,7 @@ Read `$PROJECT_HISTORY` if it exists (per-project suppressions). Each line recor
 **Categories** (fixed set): `race-condition`, `null-check`, `error-handling`, `style`, `type-safety`, `security`, `performance`, `correctness`, `other`
 
 Match each fetched comment against entries where:
+
 - `type == fp` (only suppress known false positives, not previously fixed real issues)
 - `repo` matches the current repo
 - `file-pattern` matches the comment's file path
@@ -54,7 +56,7 @@ Match each fetched comment against entries where:
 
 Skip matched comments as **SUPPRESSED**.
 
-If the history file doesn't exist or has unparseable lines, skip those lines and continue — never fail on a malformed history file.
+If the history file doesn't exist or has unparseable lines, skip those lines and continue - never fail on a malformed history file.
 
 ---
 
@@ -66,10 +68,10 @@ For each non-suppressed comment:
 2. **Top-level comments:** Read the full comment body
 3. Cross-reference the comment against the full diff (`git diff origin/main`) and the review checklist
 4. Classify:
-   - **VALID & ACTIONABLE** — a real bug, race condition, security issue, or correctness problem that exists in the current code
-   - **VALID BUT ALREADY FIXED** — a real issue that was addressed in a subsequent commit on the branch. Identify the fixing commit SHA.
-   - **FALSE POSITIVE** — the comment misunderstands the code, flags something handled elsewhere, or is stylistic noise
-   - **SUPPRESSED** — already filtered in the suppressions check above
+   - **VALID & ACTIONABLE** - a real bug, race condition, security issue, or correctness problem that exists in the current code
+   - **VALID BUT ALREADY FIXED** - a real issue that was addressed in a subsequent commit on the branch. Identify the fixing commit SHA.
+   - **FALSE POSITIVE** - the comment misunderstands the code, flags something handled elsewhere, or is stylistic noise
+   - **SUPPRESSED** - already filtered in the suppressions check above
 
 ---
 
@@ -78,12 +80,14 @@ For each non-suppressed comment:
 When replying to Greptile comments, use the correct endpoint based on comment source:
 
 **Line-level comments** (from `pulls/$PR/comments`):
+
 ```bash
 gh api repos/$REPO/pulls/$PR_NUMBER/comments/$COMMENT_ID/replies \
   -f body="<reply text>"
 ```
 
 **Top-level comments** (from `issues/$PR/comments`):
+
 ```bash
 gh api repos/$REPO/issues/$PR_NUMBER/comments \
   -f body="<reply text>"
@@ -95,9 +99,9 @@ gh api repos/$REPO/issues/$PR_NUMBER/comments \
 
 ## Reply Templates
 
-Use these templates for every Greptile reply. Always include concrete evidence — never post vague replies.
+Use these templates for every Greptile reply. Always include concrete evidence - never post vague replies.
 
-### Tier 1 (First response) — Friendly, evidence-included
+### Tier 1 (First response) - Friendly, evidence-included
 
 **For FIXES (user chose to fix the issue):**
 
@@ -132,7 +136,7 @@ Use these templates for every Greptile reply. Always include concrete evidence �
 **Suggested re-rank:** This appears to be a `<style|noise|misread>` issue, not a `<what Greptile called it>`. Consider lowering severity.
 ```
 
-### Tier 2 (Greptile re-flags after prior reply) — Firm, overwhelming evidence
+### Tier 2 (Greptile re-flags after prior reply) - Firm, overwhelming evidence
 
 Use Tier 2 when escalation detection (below) identifies a prior GStack reply on the same thread. Include maximum evidence to close the discussion.
 
@@ -148,7 +152,7 @@ Use Tier 2 when escalation detection (below) identifies a prior GStack reply on 
 2. <commit SHA where it was addressed, if applicable>
 3. <architecture rationale or design decision, if applicable>
 
-**Suggested re-rank:** Please recalibrate — this is a `<actual category>` issue, not `<claimed category>`. [Link to specific file change permalink if helpful]
+**Suggested re-rank:** Please recalibrate - this is a `<actual category>` issue, not `<claimed category>`. [Link to specific file change permalink if helpful]
 ```
 
 ---
@@ -175,13 +179,14 @@ When classifying comments, also assess whether Greptile's implied severity match
 
 - If Greptile flags something as a **security/correctness/race-condition** issue but it's actually a **style/performance** nit: include `**Suggested re-rank:**` in the reply requesting the category be corrected.
 - If Greptile flags a low-severity style issue as if it were critical: push back in the reply.
-- Always be specific about why the re-ranking is warranted — cite code and line numbers, not opinions.
+- Always be specific about why the re-ranking is warranted - cite code and line numbers, not opinions.
 
 ---
 
 ## History File Writes
 
 Before writing, ensure both directories exist:
+
 ```bash
 REMOTE_SLUG=$(browse/bin/remote-slug 2>/dev/null || ~/.claude/skills/gstack/browse/bin/remote-slug 2>/dev/null || basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
 mkdir -p "$HOME/.gstack/projects/$REMOTE_SLUG"
@@ -189,15 +194,18 @@ mkdir -p ~/.gstack
 ```
 
 Append one line per triage outcome to **both** files (per-project for suppressions, global for retro):
+
 - `~/.gstack/projects/$REMOTE_SLUG/greptile-history.md` (per-project)
 - `~/.gstack/greptile-history.md` (global aggregate)
 
 Format:
+
 ```
 <YYYY-MM-DD> | <owner/repo> | <type> | <file-pattern> | <category>
 ```
 
 Example entries:
+
 ```
 2026-03-13 | garrytan/myapp | fp | app/services/auth_service.rb | race-condition
 2026-03-13 | garrytan/myapp | fix | app/models/user.rb | null-check
@@ -209,11 +217,13 @@ Example entries:
 ## Output Format
 
 Include a Greptile summary in the output header:
+
 ```
 + N Greptile comments (X valid, Y fixed, Z FP)
 ```
 
 For each classified comment, show:
+
 - Classification tag: `[VALID]`, `[FIXED]`, `[FALSE POSITIVE]`, `[SUPPRESSED]`
 - File:line reference (for line-level) or `[top-level]` (for top-level)
 - One-line body summary

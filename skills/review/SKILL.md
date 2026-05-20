@@ -15,7 +15,8 @@ allowed-tools:
   - Glob
   - AskUserQuestion
 ---
-<!-- AUTO-GENERATED from SKILL.md.tmpl — do not edit directly -->
+
+<!-- AUTO-GENERATED from SKILL.md.tmpl - do not edit directly -->
 <!-- Regenerate: bun run gen:skill-docs -->
 
 ## Preamble (run first)
@@ -45,36 +46,38 @@ touch ~/.claude/data/.completeness-intro-seen
 ## AskUserQuestion Format
 
 **ALWAYS follow this structure for every AskUserQuestion call:**
-1. **Re-ground:** State the project, the current branch (use the `_BRANCH` value printed by the preamble — NOT any branch from conversation history or gitStatus), and the current plan/task. (1-2 sentences)
+
+1. **Re-ground:** State the project, the current branch (use the `_BRANCH` value printed by the preamble - NOT any branch from conversation history or gitStatus), and the current plan/task. (1-2 sentences)
 2. **Simplify:** Explain the problem in plain English a smart 16-year-old could follow. No raw function names, no internal jargon, no implementation details. Use concrete examples and analogies. Say what it DOES, not what it's called.
-3. **Recommend:** `RECOMMENDATION: Choose [X] because [one-line reason]` — always prefer the complete option over shortcuts (see Completeness Principle). Include `Completeness: X/10` for each option. Calibration: 10 = complete implementation (all edge cases, full coverage), 7 = covers happy path but skips some edges, 3 = shortcut that defers significant work. If both options are 8+, pick the higher; if one is ≤5, flag it.
-4. **Options:** Lettered options: `A) ... B) ... C) ...` — when an option involves effort, show both scales: `(human: ~X / CC: ~Y)`
+3. **Recommend:** `RECOMMENDATION: Choose [X] because [one-line reason]` - always prefer the complete option over shortcuts (see Completeness Principle). Include `Completeness: X/10` for each option. Calibration: 10 = complete implementation (all edge cases, full coverage), 7 = covers happy path but skips some edges, 3 = shortcut that defers significant work. If both options are 8+, pick the higher; if one is ≤5, flag it.
+4. **Options:** Lettered options: `A) ... B) ... C) ...` - when an option involves effort, show both scales: `(human: ~X / CC: ~Y)`
 
 Assume the user hasn't looked at this window in 20 minutes and doesn't have the code open. If you'd need to read the source to understand your own explanation, it's too complex.
 
 Per-skill instructions may add additional formatting rules on top of this baseline.
 
-## Completeness Principle — Boil the Lake
+## Completeness Principle - Boil the Lake
 
 AI-assisted coding makes the marginal cost of completeness near-zero. When you present options:
 
-- If Option A is the complete implementation (full parity, all edge cases, 100% coverage) and Option B is a shortcut that saves modest effort — **always recommend A**. The delta between 80 lines and 150 lines is meaningless with AI. "Good enough" is the wrong instinct when "complete" costs minutes more.
-- **Lake vs. ocean:** A "lake" is boilable — 100% test coverage for a module, full feature implementation, handling all edge cases, complete error paths. An "ocean" is not — rewriting an entire system from scratch, adding features to dependencies you don't control, multi-quarter platform migrations. Recommend boiling lakes. Flag oceans as out of scope.
-- **When estimating effort**, always show both scales: human team time and AI-assisted time. The compression ratio varies by task type — use this reference:
+- If Option A is the complete implementation (full parity, all edge cases, 100% coverage) and Option B is a shortcut that saves modest effort - **always recommend A**. The delta between 80 lines and 150 lines is meaningless with AI. "Good enough" is the wrong instinct when "complete" costs minutes more.
+- **Lake vs. ocean:** A "lake" is boilable - 100% test coverage for a module, full feature implementation, handling all edge cases, complete error paths. An "ocean" is not - rewriting an entire system from scratch, adding features to dependencies you don't control, multi-quarter platform migrations. Recommend boiling lakes. Flag oceans as out of scope.
+- **When estimating effort**, always show both scales: human team time and AI-assisted time. The compression ratio varies by task type - use this reference:
 
-| Task type | Human team | AI-assisted | Compression |
-|-----------|-----------|-----------|-------------|
-| Boilerplate / scaffolding | 2 days | 15 min | ~100x |
-| Test writing | 1 day | 15 min | ~50x |
-| Feature implementation | 1 week | 30 min | ~30x |
-| Bug fix + regression test | 4 hours | 15 min | ~20x |
-| Architecture / design | 2 days | 4 hours | ~5x |
-| Research / exploration | 1 day | 3 hours | ~3x |
+| Task type                 | Human team | AI-assisted | Compression |
+| ------------------------- | ---------- | ----------- | ----------- |
+| Boilerplate / scaffolding | 2 days     | 15 min      | ~100x       |
+| Test writing              | 1 day      | 15 min      | ~50x        |
+| Feature implementation    | 1 week     | 30 min      | ~30x        |
+| Bug fix + regression test | 4 hours    | 15 min      | ~20x        |
+| Architecture / design     | 2 days     | 4 hours     | ~5x         |
+| Research / exploration    | 1 day      | 3 hours     | ~3x         |
 
-- This principle applies to test coverage, error handling, documentation, edge cases, and feature completeness. Don't skip the last 10% to "save time" — with AI, that 10% costs seconds.
+- This principle applies to test coverage, error handling, documentation, edge cases, and feature completeness. Don't skip the last 10% to "save time" - with AI, that 10% costs seconds.
 
-**Anti-patterns — DON'T do this:**
-- BAD: "Choose B — it covers 90% of the value with less code." (If A is only 70 lines more, choose A.)
+**Anti-patterns - DON'T do this:**
+
+- BAD: "Choose B - it covers 90% of the value with less code." (If A is only 70 lines more, choose A.)
 - BAD: "We can skip edge case handling to save time." (Edge case handling costs minutes with CC.)
 - BAD: "Let's defer test coverage to a follow-up PR." (Tests are the cheapest lake to boil.)
 - BAD: Quoting only human-team effort: "This would take 2 weeks." (Say: "2 weeks human / ~1 hour AI.")
@@ -82,21 +85,24 @@ AI-assisted coding makes the marginal cost of completeness near-zero. When you p
 ## Completion Status Protocol
 
 When completing a skill workflow, report status using one of:
-- **DONE** — All steps completed successfully. Evidence provided for each claim.
-- **DONE_WITH_CONCERNS** — Completed, but with issues the user should know about. List each concern.
-- **BLOCKED** — Cannot proceed. State what is blocking and what was tried.
-- **NEEDS_CONTEXT** — Missing information required to continue. State exactly what you need.
+
+- **DONE** - All steps completed successfully. Evidence provided for each claim.
+- **DONE_WITH_CONCERNS** - Completed, but with issues the user should know about. List each concern.
+- **BLOCKED** - Cannot proceed. State what is blocking and what was tried.
+- **NEEDS_CONTEXT** - Missing information required to continue. State exactly what you need.
 
 ### Escalation
 
 It is always OK to stop and say "this is too hard for me" or "I'm not confident in this result."
 
 Bad work is worse than no work. You will not be penalized for escalating.
+
 - If you have attempted a task 3 times without success, STOP and escalate.
 - If you are uncertain about a security-sensitive change, STOP and escalate.
 - If the scope of work exceeds what you can verify, STOP and escalate.
 
 Escalation format:
+
 ```
 STATUS: BLOCKED | NEEDS_CONTEXT
 REASON: [1-2 sentences]
@@ -132,19 +138,19 @@ You are running the `/review` workflow. Analyze the current branch's diff agains
 ## Step 1: Check branch
 
 1. Run `git branch --show-current` to get the current branch.
-2. If on the base branch, output: **"Nothing to review — you're on the base branch or have no changes against it."** and stop.
+2. If on the base branch, output: **"Nothing to review - you're on the base branch or have no changes against it."** and stop.
 3. Run `git fetch origin <base> --quiet && git diff origin/<base> --stat` to check if there's a diff. If no diff, output the same message and stop.
 
 ---
 
 ## Step 1.5: Scope Drift Detection
 
-Before reviewing code quality, check: **did they build what was requested — nothing more, nothing less?**
+Before reviewing code quality, check: **did they build what was requested - nothing more, nothing less?**
 
 1. Read `TODOS.md` (if it exists). Read PR description (`gh pr view --json body --jq .body 2>/dev/null || true`).
    Read commit messages (`git log origin/<base>..HEAD --oneline`).
-   **If no PR exists:** rely on commit messages and TODOS.md for stated intent — this is the common case since /review runs before /ship creates the PR.
-2. Identify the **stated intent** — what was this branch supposed to accomplish?
+   **If no PR exists:** rely on commit messages and TODOS.md for stated intent - this is the common case since /review runs before /ship creates the PR.
+2. Identify the **stated intent** - what was this branch supposed to accomplish?
 3. Run `git diff origin/<base> --stat` and compare the files changed against the stated intent.
 4. Evaluate with skepticism:
 
@@ -159,6 +165,7 @@ Before reviewing code quality, check: **did they build what was requested — no
    - Partial implementations (started but not finished)
 
 5. Output (before the main review begins):
+
    ```
    Scope Check: [CLEAN / DRIFT DETECTED / REQUIREMENTS MISSING]
    Intent: <1-line summary of what was requested>
@@ -167,7 +174,7 @@ Before reviewing code quality, check: **did they build what was requested — no
    [If missing: list each unaddressed requirement]
    ```
 
-6. This is **INFORMATIONAL** — does not block the review. Proceed to Step 2.
+6. This is **INFORMATIONAL** - does not block the review. Proceed to Step 2.
 
 ---
 
@@ -183,9 +190,9 @@ Read `.claude/skills/review/checklist.md`.
 
 Read `.claude/skills/review/greptile-triage.md` and follow the fetch, filter, classify, and **escalation detection** steps.
 
-**If no PR exists, `gh` fails, API returns an error, or there are zero Greptile comments:** Skip this step silently. Greptile integration is additive — the review works without it.
+**If no PR exists, `gh` fails, API returns an error, or there are zero Greptile comments:** Skip this step silently. Greptile integration is additive - the review works without it.
 
-**If Greptile comments are found:** Store the classifications (VALID & ACTIONABLE, VALID BUT ALREADY FIXED, FALSE POSITIVE, SUPPRESSED) — you will need them in Step 5.
+**If Greptile comments are found:** Store the classifications (VALID & ACTIONABLE, VALID BUT ALREADY FIXED, FALSE POSITIVE, SUPPRESSED) - you will need them in Step 5.
 
 ---
 
@@ -210,7 +217,7 @@ Apply the checklist against the diff in two passes:
 
 **Enum & Value Completeness requires reading code OUTSIDE the diff.** When the diff introduces a new enum value, status, tier, or type constant, use Grep to find all files that reference sibling values, then Read those files to check if the new value is handled. This is the one category where within-diff review is insufficient.
 
-Follow the output format specified in the checklist. Respect the suppressions — do NOT flag items listed in the "DO NOT flag" section.
+Follow the output format specified in the checklist. Respect the suppressions - do NOT flag items listed in the "DO NOT flag" section.
 
 ---
 
@@ -228,16 +235,16 @@ eval $(~/.claude/bin/iris-diff-scope <base> 2>/dev/null)
 
 **If `SCOPE_FRONTEND=true`:**
 
-1. **Check for DESIGN.md.** If `DESIGN.md` or `design-system.md` exists in the repo root, read it. All design findings are calibrated against it — patterns blessed in DESIGN.md are not flagged. If not found, use universal design principles.
+1. **Check for DESIGN.md.** If `DESIGN.md` or `design-system.md` exists in the repo root, read it. All design findings are calibrated against it - patterns blessed in DESIGN.md are not flagged. If not found, use universal design principles.
 
-2. **Read `.claude/skills/review/design-checklist.md`.** If the file cannot be read, skip design review with a note: "Design checklist not found — skipping design review."
+2. **Read `.claude/skills/review/design-checklist.md`.** If the file cannot be read, skip design review with a note: "Design checklist not found - skipping design review."
 
 3. **Read each changed frontend file** (full file, not just diff hunks). Frontend files are identified by the patterns listed in the checklist.
 
 4. **Apply the design checklist** against the changed files. For each item:
    - **[HIGH] mechanical CSS fix** (`outline: none`, `!important`, `font-size < 16px`): classify as AUTO-FIX
    - **[HIGH/MEDIUM] design judgment needed**: classify as ASK
-   - **[LOW] intent-based detection**: present as "Possible — verify visually or run /design-review"
+   - **[LOW] intent-based detection**: present as "Possible - verify visually or run /design-review"
 
 5. **Include findings** in the review output under a "Design Review" header, following the output format in the checklist. Design findings merge with code review findings into the same Fix-First flow.
 
@@ -251,13 +258,13 @@ echo '{"skill":"design-review-lite","timestamp":"TIMESTAMP","status":"STATUS","f
 
 Substitute: TIMESTAMP = ISO 8601 datetime, STATUS = "clean" if 0 findings or "issues_found", N = total findings, M = auto-fixed count.
 
-Include any design findings alongside the findings from Step 4. They follow the same Fix-First flow in Step 5 — AUTO-FIX for mechanical CSS fixes, ASK for everything else.
+Include any design findings alongside the findings from Step 4. They follow the same Fix-First flow in Step 5 - AUTO-FIX for mechanical CSS fixes, ASK for everything else.
 
 ---
 
 ## Step 5: Fix-First Review
 
-**Every finding gets action — not just critical ones.**
+**Every finding gets action - not just critical ones.**
 
 Output a summary header: `Pre-Landing Review: N issues (X critical, Y informational)`
 
@@ -281,18 +288,19 @@ If there are ASK items remaining, present them in ONE AskUserQuestion:
 - Include an overall RECOMMENDATION
 
 Example format:
+
 ```
 I auto-fixed 5 issues. 2 need your input:
 
-1. [CRITICAL] app/models/post.rb:42 — Race condition in status transition
+1. [CRITICAL] app/models/post.rb:42 - Race condition in status transition
    Fix: Add `WHERE status = 'draft'` to the UPDATE
    → A) Fix  B) Skip
 
-2. [INFORMATIONAL] app/services/generator.rb:88 — LLM output not type-checked before DB write
+2. [INFORMATIONAL] app/services/generator.rb:88 - LLM output not type-checked before DB write
    Fix: Add JSON schema validation
    → A) Fix  B) Skip
 
-RECOMMENDATION: Fix both — #1 is a real race condition, #2 prevents silent data corruption.
+RECOMMENDATION: Fix both - #1 is a real race condition, #2 prevents silent data corruption.
 ```
 
 If 3 or fewer ASK items, you may use individual AskUserQuestion calls instead of batching.
@@ -306,10 +314,11 @@ If no ASK items exist (everything was AUTO-FIX), skip the question entirely.
 ### Verification of claims
 
 Before producing the final review output:
+
 - If you claim "this pattern is safe" → cite the specific line proving safety
 - If you claim "this is handled elsewhere" → read and cite the handling code
 - If you claim "tests cover this" → name the test file and method
-- Never say "likely handled" or "probably tested" — verify or flag as unknown
+- Never say "likely handled" or "probably tested" - verify or flag as unknown
 
 **Rationalization prevention:** "This looks fine" is not a finding. Either cite evidence it IS fine, or flag it as unverified.
 
@@ -321,7 +330,7 @@ After outputting your own findings, if Greptile comments were classified in Step
 
 Before replying to any comment, run the **Escalation Detection** algorithm from greptile-triage.md to determine whether to use Tier 1 (friendly) or Tier 2 (firm) reply templates.
 
-1. **VALID & ACTIONABLE comments:** These are included in your findings — they follow the Fix-First flow (auto-fixed if mechanical, batched into ASK if not) (A: Fix it now, B: Acknowledge, C: False positive). If the user chooses A (fix), reply using the **Fix reply template** from greptile-triage.md (include inline diff + explanation). If the user chooses C (false positive), reply using the **False Positive reply template** (include evidence + suggested re-rank), save to both per-project and global greptile-history.
+1. **VALID & ACTIONABLE comments:** These are included in your findings - they follow the Fix-First flow (auto-fixed if mechanical, batched into ASK if not) (A: Fix it now, B: Acknowledge, C: False positive). If the user chooses A (fix), reply using the **Fix reply template** from greptile-triage.md (include inline diff + explanation). If the user chooses C (false positive), reply using the **False Positive reply template** (include evidence + suggested re-rank), save to both per-project and global greptile-history.
 
 2. **FALSE POSITIVE comments:** Present each one via AskUserQuestion:
    - Show the Greptile comment: file:line (or [top-level]) + body summary + permalink URL
@@ -329,15 +338,15 @@ Before replying to any comment, run the **Escalation Detection** algorithm from 
    - Options:
      - A) Reply to Greptile explaining why this is incorrect (recommended if clearly wrong)
      - B) Fix it anyway (if low-effort and harmless)
-     - C) Ignore — don't reply, don't fix
+     - C) Ignore - don't reply, don't fix
 
    If the user chooses A, reply using the **False Positive reply template** from greptile-triage.md (include evidence + suggested re-rank), save to both per-project and global greptile-history.
 
-3. **VALID BUT ALREADY FIXED comments:** Reply using the **Already Fixed reply template** from greptile-triage.md — no AskUserQuestion needed:
+3. **VALID BUT ALREADY FIXED comments:** Reply using the **Already Fixed reply template** from greptile-triage.md - no AskUserQuestion needed:
    - Include what was done and the fixing commit SHA
    - Save to both per-project and global greptile-history
 
-4. **SUPPRESSED comments:** Skip silently — these are known false positives from previous triage.
+4. **SUPPRESSED comments:** Skip silently - these are known false positives from previous triage.
 
 ---
 
@@ -361,7 +370,7 @@ Cross-reference the diff against documentation files. For each `.md` file in the
 2. If the doc file was NOT updated in this branch but the code it describes WAS changed, flag it as an INFORMATIONAL finding:
    "Documentation may be stale: [file] describes [feature/component] but code changed in this branch. Consider running `/document-release`."
 
-This is informational only — never critical. The fix action is `/document-release`.
+This is informational only - never critical. The fix action is `/document-release`.
 
 If no documentation files exist, skip this step silently.
 
@@ -370,7 +379,7 @@ If no documentation files exist, skip this step silently.
 ## Important Rules
 
 - **Read the FULL diff before commenting.** Do not flag issues already addressed in the diff.
-- **Fix-first, not read-only.** AUTO-FIX items are applied directly. ASK items are only applied after user approval. Never commit, push, or create PRs — that's /ship's job.
+- **Fix-first, not read-only.** AUTO-FIX items are applied directly. ASK items are only applied after user approval. Never commit, push, or create PRs - that's /ship's job.
 - **Be terse.** One line problem, one line fix. No preamble.
 - **Only flag real problems.** Skip anything that's fine.
 - **Use Greptile reply templates from greptile-triage.md.** Every reply includes evidence. Never post vague replies.

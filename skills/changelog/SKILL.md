@@ -34,12 +34,14 @@ Read [references/format_guide.md](references/format_guide.md) for the exact stru
 
 Generate or update two files in the project root (or user-specified location):
 
-### `CHANGELOG.md` — Developer Changelog
+### `CHANGELOG.md` - Developer Changelog
+
 - Full technical detail with commit hashes and PR links
 - All commit categories included
 - Stats section at bottom
 
-### `CHANGELOG-customer.md` — Customer Changelog
+### `CHANGELOG-customer.md` - Customer Changelog
+
 - User-facing language only
 - Skip internal changes (CI, tests, chore, style)
 - Describe impact, not implementation
@@ -51,28 +53,32 @@ When changelog files already exist:
 
 1. **Read the existing file** before generating
 2. **Identify the last recorded commit hash or date** in the existing changelog
-3. **Only generate entries for new commits** not already covered — use commit hashes as the source of truth, not dates
+3. **Only generate entries for new commits** not already covered - use commit hashes as the source of truth, not dates
 4. **Prepend the new date section** above existing entries, preserving the file header
-5. **Never modify, replace, or update existing date entries** — each run produces a new `## [version] — YYYY-MM-DD` block for today's new commits only
+5. **Never modify, replace, or update existing date entries** - each run produces a new `## [version] - YYYY-MM-DD` block for today's new commits only
 6. If there are no new commits since the last entry, inform the user and do not modify the file
 
 **Correct structure after multiple runs:**
+
 ```markdown
-# Changelog — Developer
+# Changelog - Developer
 
 ## 2026-03-17
 
 ### Added
+
 - new feature today
 
 ## 2026-03-16
 
 ### Fixed
+
 - yesterday's bugfix
 
 ## 2026-03-14
 
 ### Added
+
 - feature from last week
 ```
 
